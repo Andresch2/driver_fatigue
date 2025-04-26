@@ -36,7 +36,7 @@ class LoginPage extends StatelessWidget {
               if (!ok) return;
               final me = _auth.user.value;
               if (me == null) return;
-              // carga perfil extra
+
               final profile = await _userDb.getProfile(me.$id);
               if (profile != null) {
                 Get.find<UserController>()

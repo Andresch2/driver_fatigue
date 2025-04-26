@@ -1,20 +1,23 @@
-// lib/app/controllers/user_controller.dart
 import 'package:get/get.dart';
 
 class UserController extends GetxController {
-  var id    = ''.obs;
-  var name  = ''.obs;
+  var userId = ''.obs;
+  var nombre = ''.obs;
   var email = ''.obs;
 
-  void setUser({required String userId, required String userName, required String userEmail}) {
-    id.value    = userId;
-    name.value  = userName;
-    email.value = userEmail;
+  void setUser({
+    required String id,
+    required String nombreUsuario,
+    required String correo,
+  }) {
+    userId.value = id;
+    nombre.value = nombreUsuario;
+    email.value = correo;
   }
 
-  void clear() {
-    id.value = '';
-    name.value = '';
+  void clearUser() {
+    userId.value = '';
+    nombre.value = '';
     email.value = '';
   }
 }
