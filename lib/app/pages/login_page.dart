@@ -5,6 +5,9 @@ import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/utils/validators.dart';
+import 'package:fatigue_control/app/widgets/custom_background.dart';
+import 'package:fatigue_control/app/widgets/custom_button.dart';
+import 'package:fatigue_control/app/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
