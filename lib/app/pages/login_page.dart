@@ -1,56 +1,157 @@
+import 'package:appwrite/models.dart' show Document, User;
+import 'package:fatigue_control/app/controllers/auth_controller.dart';
+import 'package:fatigue_control/app/controllers/user_controller.dart';
+import 'package:fatigue_control/app/data/repositories/user_repository.dart';
+import 'package:fatigue_control/app/routes/app_routes.dart';
+import 'package:fatigue_control/app/utils/validators.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-
-import '../controllers/user_controller.dart';
-import '../routes/app_routes.dart';
-import '../services/auth_service.dart';
-import '../services/user_database_service.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
+  
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
-  final _auth      = Get.find<AuthService>();
-  final _userDb    = UserDatabaseService();
+
+  final _authC  = Get.find<AuthController>();
+  final _userDb = UserRepository();
 
   @override
-  Widget build(BuildContext c) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(children: [
-          TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: 'Email')),
-          TextField(controller: _passCtrl,  decoration: const InputDecoration(labelText: 'Contraseña'), obscureText: true),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            child: const Text('Iniciar sesión'),
-            onPressed: () async {
-              final email = _emailCtrl.text.trim();
-              final pass  = _passCtrl.text.trim();
-              if (email.isEmpty || pass.isEmpty) {
-                Get.snackbar('Error', 'Completa todos los campos');
-                return;
-              }
-              final ok = await _auth.login(email: email, password: pass);
-              if (!ok) return;
-              final me = _auth.user.value;
-              if (me == null) return;
+      body: CustomBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Icon(Icons.shield_outlined, size: 80, color: Theme.of(context).primaryColor),
+                const SizedBox(height: 16),
+                Text('Control de Fatiga',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)
+                ),
+                const SizedBox(height: 8),
+                Text('Inicia sesión para continuar',
+                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600)
+                ),
+                const SizedBox(height: 40),
 
-              final profile = await _userDb.getProfile(me.$id);
-              if (profile != null) {
-                Get.find<UserController>()
-                  .setUser(userId: me.$id, userName: profile['name'], userEmail: profile['email']);
-              }
-              Get.offAllNamed(AppRoutes.home);
-            },
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      children: [
+                        CustomTextField(
+                          controller: _emailCtrl,
+                          labelText: 'Correo electrónico',
+                          hintText: 'ejemplo@email.com',
+                          prefixIcon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 20),
+                        CustomTextField(
+                          controller: _passCtrl,
+                          labelText: 'Contraseña',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: true,
+                        ),
+                        const SizedBox(height: 24),
+                        Obx(() => CustomButton(
+                          text: 'Iniciar sesión',
+                          icon: Icons.login,
+                          isLoading: _authC.isLoading.value,
+                          onPressed: _handleLogin,
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('¿No tienes cuenta?', style: TextStyle(color: Colors.grey.shade700)),
+                    TextButton(
+                      onPressed: () => Get.toNamed(AppRoutes.register),
+                      child: const Text('Regístrate', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          TextButton(
-            child: const Text('Crear nueva cuenta'),
-            onPressed: () => Get.toNamed(AppRoutes.register),
-          ),
-        ]),
+        ),
       ),
     );
+  }
+
+  Future<void> _handleLogin() async {
+    final email = _emailCtrl.text.trim();
+    final pass  = _passCtrl.text.trim();
+    
+    if (email.isEmpty || pass.isEmpty) {
+      Get.snackbar('Error', 'Completa todos los campos',
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+      );
+      return;
+    }
+    if (!Validators.isValidEmail(email)) {
+      Get.snackbar('Error', 'Correo inválido',
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+        icon: const Icon(Icons.error_outline, color: Colors.red),
+      );
+      return;
+    }
+
+    final success = await _authC.login(email: email, password: pass);
+    if (!success) return;
+
+    final User? me = _authC.user.value;
+    if (me == null) {
+      Get.snackbar('Error', 'No se pudo obtener tu usuario',
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+      );
+      return;
+    }
+
+    try {
+
+      final Document? doc = await _userDb.getUserById(me.$id);
+      if (doc != null) {
+        final uc = Get.find<UserController>();
+        uc.setUser(
+          id: doc.$id,
+          nombreUsuario: doc.data['name'],
+          correo: doc.data['email'],
+        );
+      } else {
+        Get.snackbar('Aviso', 'Usuario sin perfil, continúa');
+      }
+
+      final ac = Get.find<AnalysisController>();
+      ac.setUserId(me.$id);
+
+      Get.snackbar('¡Bienvenido!', 'Has iniciado sesión con éxito',
+        backgroundColor: Colors.green.shade50,
+        colorText: Colors.green.shade800,
+        icon: const Icon(Icons.check_circle, color: Colors.green),
+      );
+      Get.offAllNamed(AppRoutes.home);
+
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo cargar perfil: $e',
+        backgroundColor: Colors.red.shade50,
+        colorText: Colors.red.shade800,
+      );
+    }
   }
 }
