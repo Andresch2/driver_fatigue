@@ -44,7 +44,6 @@ class UserRepository {
       );
       return result.documents.isNotEmpty ? result.documents.first : null;
     } catch (e) {
-      // ignore: avoid_print
       print('Error al buscar el usuario por email: $e');
       return null;
     }
@@ -59,7 +58,6 @@ class UserRepository {
       );
       return document;
     } catch (e) {
-      // ignore: avoid_print
       print('Error al obtener usuario por ID: $e');
       return null;
     }

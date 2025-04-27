@@ -1,11 +1,11 @@
 import 'package:appwrite/models.dart' show Document, User;
+import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/controllers/auth_controller.dart';
 import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/utils/validators.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 class LoginPage extends StatelessWidget {
