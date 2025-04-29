@@ -34,36 +34,46 @@ class HomePage extends StatelessWidget {
         child: Center(
           child: Obx(() {
             final nombre = userController.nombre.value;
-            if (nombre.isEmpty) {
-              return const Text(
-                'Bienvenido',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              );
-            }
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '¡Bienvenido,',
+                  nombre.isEmpty ? 'Bienvenido' : '¡Bienvenido,',
                   style: TextStyle(
                     fontSize: 24,
                     color: Theme.of(context).primaryColor,
                   ),
                 ),
-                Text(
-                  nombre,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+                if (nombre.isNotEmpty)
+                  Text(
+                    nombre,
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 ElevatedButton.icon(
+                  icon: const Icon(Icons.face_retouching_natural),
+                  label: const Text('Iniciar Escaneo Facial'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    textStyle: const TextStyle(fontSize: 16),
+                  ),
+                  onPressed: () => Get.toNamed(AppRoutes.scan),
+                ),
+                const SizedBox(height: 16),
+                TextButton.icon(
                   icon: const Icon(Icons.person),
                   label: const Text('Ver mi perfil'),
                   onPressed: () {
                     final uid = userController.userId.value;
-                    Get.toNamed(AppRoutes.profile, arguments: uid);
+                    if (uid.isNotEmpty) {
+                      Get.toNamed(AppRoutes.profile, arguments: uid);
+                    } else {
+                      Get.snackbar('Error', 'Usuario no identificado');
+                    }
                   },
                 ),
               ],
