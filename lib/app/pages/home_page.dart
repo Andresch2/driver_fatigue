@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../controllers/analysis_controller.dart';
 import '../controllers/user_controller.dart';
+import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
 import '../widgets/custom_background.dart';
+import '../widgets/shimmer_loading.dart';
+import '../widgets/status_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final userController = Get.find<UserController>();
+    final analysisController = Get.find<AnalysisController>();
+    final userController     = Get.find<UserController>();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inicio'),
+        title: const Text('Historial de Análisis'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
-            tooltip: 'Mi perfil',
             onPressed: () {
               final uid = userController.userId.value;
               if (uid.isNotEmpty) {
@@ -31,55 +35,72 @@ class HomePage extends StatelessWidget {
         ],
       ),
       body: CustomBackground(
-        child: Center(
-          child: Obx(() {
-            final nombre = userController.nombre.value;
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  nombre.isEmpty ? 'Bienvenido' : '¡Bienvenido,',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Theme.of(context).primaryColor,
+        child: Obx(() {
+          final List<AnalysisRecord> historial = analysisController.historial;
+          final bool isLoading = historial.isEmpty;
+
+          return ShimmerLoading(
+            isLoading: isLoading,
+            child: isLoading
+                ? ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: 5,
+                    separatorBuilder: (_, __) => const SizedBox(height: 12),
+                    itemBuilder: (_, __) => const ShimmerPlaceholder(height: 80),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(8),
+                    itemCount: historial.length,
+                    itemBuilder: (context, index) {
+                      final record = historial[index];
+                      return Dismissible(
+                        key: ValueKey(record.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          color: Colors.red,
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        confirmDismiss: (_) async {
+                          return await Get.dialog<bool>(
+                            AlertDialog(
+                              title: const Text('Confirmar'),
+                              content: const Text('¿Eliminar este análisis?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Get.back(result: false),
+                                  child: const Text('No'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Get.back(result: true),
+                                  child: const Text('Sí'),
+                                ),
+                              ],
+                            ),
+                          ) ?? false;
+                        },
+                        onDismissed: (_) {
+                          analysisController.deleteAnalysis(record.id, index);
+                          Get.snackbar('Eliminado', 'Análisis borrado correctamente');
+                        },
+                        child: StatusCard(
+                          status:       record.status,
+                          date:         record.date,
+                          observations: record.observations,
+                          fatigueScore: record.fatigueScore,
+                          onTap: () => Get.toNamed(AppRoutes.detail, arguments: record.toMap()),
+                        ),
+                      );
+                    },
                   ),
-                ),
-                if (nombre.isNotEmpty)
-                  Text(
-                    nombre,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                const SizedBox(height: 32),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.face_retouching_natural),
-                  label: const Text('Iniciar Escaneo Facial'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    textStyle: const TextStyle(fontSize: 16),
-                  ),
-                  onPressed: () => Get.toNamed(AppRoutes.scan),
-                ),
-                const SizedBox(height: 16),
-                TextButton.icon(
-                  icon: const Icon(Icons.person),
-                  label: const Text('Ver mi perfil'),
-                  onPressed: () {
-                    final uid = userController.userId.value;
-                    if (uid.isNotEmpty) {
-                      Get.toNamed(AppRoutes.profile, arguments: uid);
-                    } else {
-                      Get.snackbar('Error', 'Usuario no identificado');
-                    }
-                  },
-                ),
-              ],
-            );
-          }),
-        ),
+          );
+        }),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text('Nuevo análisis'),
+        onPressed: () => Get.toNamed(AppRoutes.scan),
       ),
     );
   }
