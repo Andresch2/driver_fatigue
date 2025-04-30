@@ -1,3 +1,4 @@
+import 'package:fatigue_control/app/pages/detail_page.dart';
 import 'package:fatigue_control/app/pages/home_page.dart';
 import 'package:fatigue_control/app/pages/login_page.dart';
 import 'package:fatigue_control/app/pages/profile_page.dart';
@@ -16,5 +17,6 @@ class AppPages {
     GetPage(name: AppRoutes.profile, page: () => ProfilePage()),
     GetPage(name: AppRoutes.scan, page: () => ScanPage()),
     GetPage(name: AppRoutes.report, page: () => ReportPage()),
+    GetPage(name: AppRoutes.detail, page: () => DetailPage()),
   ];
 }

@@ -5,4 +5,5 @@ abstract class AppRoutes {
   static const profile = '/profile';
   static const scan = '/scan';
   static const report = '/report';
+  static const detail = '/detail';
 }
