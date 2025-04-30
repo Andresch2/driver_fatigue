@@ -1,10 +1,12 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/user_controller.dart';
+import '../routes/app_routes.dart';
 import '../services/ia_service.dart';
 import '../widgets/custom_background.dart';
 import '../widgets/custom_button.dart';
@@ -21,7 +23,6 @@ class _ScanPageState extends State<ScanPage> {
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
   int _countdown = 0;
-
   final IaService _iaService = IaService();
 
   @override
@@ -77,21 +78,26 @@ class _ScanPageState extends State<ScanPage> {
       final resultado = await _iaService.analizarFatiga(inputImage);
 
       final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-      final userId = Get.find<UserController>().userId.value;
+      final userId  = Get.find<UserController>().userId.value;
 
       final data = {
-        'user_id': userId,
-        'status': resultado['estado']?.toString() ?? 'No Detectado',
-        'date': dateStr,
-        'observations': resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
+        'user_id':        userId,
+        'status':         resultado['estado']?.toString() ?? 'No Detectado',
+        'date':           dateStr,
+        'observations':   resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
         'eye_probability': (resultado['probabilidad_ojos'] as num?)?.toDouble() ?? 1.0,
-        'yawn_detected': (resultado['bostezo_detectado'] as bool?) ?? false,
-        'head_tilt': (resultado['inclinacion_cabeza'] as num?)?.toDouble() ?? 0.0,
-        'fatigue_score': (resultado['score_fatiga'] as num?)?.toDouble() ?? 0.0,
+        'yawn_detected':   (resultado['bostezo_detectado'] as bool?) ?? false,
+        'head_tilt':       (resultado['inclinacion_cabeza'] as num?)?.toDouble() ?? 0.0,
+        'fatigue_score':   (resultado['score_fatiga'] as num?)?.toDouble() ?? 0.0,
       };
 
+      if (resultado['fatigado'] == true) {
+        await _mostrarAlertaFatiga(data);
+      } else {
+        Get.toNamed(AppRoutes.report, arguments: data);
+      }
     } catch (e) {
-      Get.snackbar('Error', 'Error al analizar la imagen: $e');
+      Get.snackbar('Error', 'Fallo al analizar la imagen: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -100,6 +106,15 @@ class _ScanPageState extends State<ScanPage> {
         });
       }
     }
+  }
+
+  Future<void> _mostrarAlertaFatiga(Map<String, dynamic> data) async {
+    final tts = FlutterTts();
+    await tts.setLanguage("es-ES");
+    await tts.setPitch(1.0);
+    await tts.setSpeechRate(0.5);
+    await tts.speak("¡Atención! Se detectaron signos de fatiga. Por favor tome un descanso.");
+    Get.toNamed(AppRoutes.alert, arguments: data);
   }
 
   @override
@@ -121,10 +136,7 @@ class _ScanPageState extends State<ScanPage> {
                     ),
                     const SizedBox(height: 20),
                     if (_isProcessing && _countdown > 0)
-                      Text(
-                        'Escaneando en: $_countdown s',
-                        style: const TextStyle(fontSize: 18),
-                      ),
+                      Text('Escaneando en: $_countdown s', style: const TextStyle(fontSize: 18)),
                     const SizedBox(height: 10),
                     CustomButton(
                       text: 'Analizar con IA',

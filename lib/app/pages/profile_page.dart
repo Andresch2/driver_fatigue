@@ -29,7 +29,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-
     _client = Client()
       ..setEndpoint(AppwriteConstants.endpoint)
       ..setProject(AppwriteConstants.projectId)
