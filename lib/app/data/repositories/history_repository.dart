@@ -1,15 +1,11 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:fatigue_control/app/constants/constants.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 
 import '../models/analysis_record.dart';
 
 class HistoryRepository {
-  final Client client = Client()
-    ..setEndpoint(AppwriteConstants.endpoint)
-    ..setProject(AppwriteConstants.projectId)
-    ..setSelfSigned(status: true);
-
   late final Databases databases = Databases(client);
 
   Future<Document> saveToHistory({
@@ -39,7 +35,9 @@ class HistoryRepository {
     );
   }
 
-  Future<void> deleteFromHistory({ required String documentId }) async {
+  Future<void> deleteFromHistory({
+    required String documentId,
+  }) async {
     await databases.deleteDocument(
       databaseId: AppwriteConstants.databaseId,
       collectionId: AppwriteConstants.historyCollectionId,

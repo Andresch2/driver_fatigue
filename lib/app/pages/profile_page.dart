@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:fatigue_control/app/constants/constants.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
 import 'package:file_selector/file_selector.dart';
@@ -22,20 +23,14 @@ class _ProfilePageState extends State<ProfilePage> {
   bool isLoading = true;
   late final String userId;
 
-  late final Client _client;
   late final Account _account;
   late final Storage _storage;
 
   @override
   void initState() {
     super.initState();
-    _client = Client()
-      ..setEndpoint(AppwriteConstants.endpoint)
-      ..setProject(AppwriteConstants.projectId)
-      ..setSelfSigned(status: true);
-
-    _account = Account(_client);
-    _storage = Storage(_client);
+    _account = Account(client);
+    _storage = Storage(client);
 
     final arg = Get.arguments;
     if (arg is! String || arg.isEmpty) {
@@ -68,7 +63,10 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Editar nombre'),
-        content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Nombre completo')),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(labelText: 'Nombre completo'),
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(onPressed: () => Navigator.pop(context, ctrl.text.trim()), child: const Text('Guardar')),
@@ -98,7 +96,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() => isLoading = true);
     try {
-
       final uploaded = await _storage.createFile(
         bucketId: AppwriteConstants.bucketId,
         fileId: ID.unique(),
@@ -126,7 +123,11 @@ class _ProfilePageState extends State<ProfilePage> {
         String pwd = '';
         return AlertDialog(
           title: const Text('Nueva contraseña'),
-          content: TextField(onChanged: (v) => pwd = v, decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'), obscureText: true),
+          content: TextField(
+            onChanged: (v) => pwd = v,
+            decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'),
+            obscureText: true,
+          ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
             TextButton(onPressed: () => Navigator.pop(context, pwd), child: const Text('Aceptar')),
@@ -160,7 +161,6 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.grey.shade200,
       backgroundImage: NetworkImage(picUrl),
       onBackgroundImageError: (_, __) {
-
         setState(() => userData!['profilePicture'] = null);
       },
     );

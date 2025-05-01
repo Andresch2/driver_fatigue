@@ -2,6 +2,8 @@ import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/controllers/auth_controller.dart';
 import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/auth_repository.dart';
+import 'package:fatigue_control/app/data/repositories/history_repository.dart';
+import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_pages.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -11,18 +13,18 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final authRepo = AuthRepository();
-  await authRepo.isLoggedIn();
-  Get.put(authRepo, permanent: true);
+  Get.put<AuthRepository>(authRepo, permanent: true);
+  Get.put<HistoryRepository>(HistoryRepository(), permanent: true);
+  Get.put<UserRepository>(UserRepository(), permanent: true);
 
-  Get.put(AuthController(),       permanent: true);
-  Get.put(UserController(),       permanent: true);
-  Get.put(AnalysisController(),   permanent: true);
+  Get.put<AuthController>(AuthController(), permanent: true);
+  Get.put<UserController>(UserController(), permanent: true);
+  Get.put<AnalysisController>(AnalysisController(), permanent: true);
 
-  final initial = authRepo.user.value != null
-      ? AppRoutes.home
-      : AppRoutes.login;
+  final bool loggedIn = await authRepo.isLoggedIn();
+  final initialRoute = loggedIn ? AppRoutes.home : AppRoutes.login;
 
-  runApp(MyApp(initialRoute: initial));
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
 class MyApp extends StatelessWidget {

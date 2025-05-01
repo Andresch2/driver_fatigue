@@ -3,6 +3,7 @@ import 'package:fatigue_control/app/constants/constants.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -50,7 +51,6 @@ class ReportPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Estado
                       Text(
                         'Estado: ${record.status}',
                         style: TextStyle(
@@ -62,7 +62,6 @@ class ReportPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 5),
-                      // Score
                       Text(
                         'Score de Fatiga: ${(record.fatigueScore * 100).toStringAsFixed(1)}%',
                         style: TextStyle(
@@ -74,7 +73,6 @@ class ReportPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const Divider(),
                       const SizedBox(height: 10),
-
                       ExpansionTile(
                         leading: Icon(Icons.analytics_outlined, color: Theme.of(context).colorScheme.primary),
                         title: Text(
@@ -102,10 +100,8 @@ class ReportPage extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const Divider(),
                       const SizedBox(height: 10),
-
                       const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(
                         record.observations.isNotEmpty
@@ -132,7 +128,7 @@ class ReportPage extends StatelessWidget {
                       BarChartData(
                         barGroups: [
                           BarChartGroupData(x: 0, barRods: [
-                            BarChartRodData(toY: record.fatigueScore * 100, color: Colors.red),
+                            BarChartRodData(toY: record.fatigueScore * 100),
                           ]),
                         ],
                         titlesData: FlTitlesData(
@@ -158,10 +154,6 @@ class ReportPage extends StatelessWidget {
                   icon: Icons.save,
                   onPressed: () async {
                     try {
-                      // 1) Crear en collection "reports" (SIN $id)
-                      final client    = Client()
-                        ..setEndpoint(AppwriteConstants.endpoint)
-                        ..setProject(AppwriteConstants.projectId);
                       final databases = Databases(client);
                       await databases.createDocument(
                         databaseId:   AppwriteConstants.databaseId,
@@ -170,7 +162,6 @@ class ReportPage extends StatelessWidget {
                         data:         record.toCreateMap(),
                       );
 
-                      // 2) Guardar en "history" y obtener documento
                       final histDoc = await HistoryRepository().saveToHistory(
                         userId:         record.userId,
                         status:         record.status,
@@ -182,7 +173,6 @@ class ReportPage extends StatelessWidget {
                         fatigueScore:   record.fatigueScore,
                       );
 
-                      // 3) Añadir a memoria con el nuevo $id
                       final newMap = {
                         r'$id': histDoc.$id,
                         ...record.toCreateMap(),

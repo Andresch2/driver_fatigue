@@ -1,9 +1,9 @@
 import 'package:get/get.dart';
 
 class UserController extends GetxController {
-  var userId = ''.obs;
-  var nombre = ''.obs;
-  var email = ''.obs;
+  final RxString userId = ''.obs;
+  final RxString nombre = ''.obs;
+  final RxString email = ''.obs;
 
   void setUser({
     required String id,
@@ -13,6 +13,8 @@ class UserController extends GetxController {
     userId.value = id;
     nombre.value = nombreUsuario;
     email.value = correo;
+    // ignore: avoid_print
+    print('User actualizado: id=$id, nombre=$nombreUsuario, correo=$correo');
   }
 
   void clearUser() {

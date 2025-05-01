@@ -1,22 +1,27 @@
+import 'package:fatigue_control/app/data/models/analysis_record.dart';
+import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:get/get.dart';
 
-import '../data/models/analysis_record.dart';
-import '../data/repositories/history_repository.dart';
-
 class AnalysisController extends GetxController {
-  final HistoryRepository _historyService = HistoryRepository();
+  final HistoryRepository _historyService = Get.find<HistoryRepository>();
 
   final RxList<AnalysisRecord> historial = <AnalysisRecord>[].obs;
 
-  late String userId;
+  final RxString userId = ''.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    ever<String>(userId, (_) => _loadHistory());
+  }
 
   void setUserId(String id) {
-    userId = id;
-    _loadHistory();
+    userId.value = id;
   }
 
   Future<void> _loadHistory() async {
-    final h = await _historyService.getHistory(userId);
+    if (userId.isEmpty) return;
+    final h = await _historyService.getHistory(userId.value);
     historial.assignAll(h);
   }
 

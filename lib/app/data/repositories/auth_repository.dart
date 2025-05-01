@@ -57,7 +57,6 @@ class AuthRepository extends GetxService {
     required String password,
   }) async {
     try {
-
       try {
         await _account.deleteSession(sessionId: 'current');
       } catch (_) {}
@@ -83,6 +82,7 @@ class AuthRepository extends GetxService {
     user.value = null;
   }
 
+  /// Comprueba si hay sesión activa (útil al arrancar)
   Future<bool> isLoggedIn() async {
     try {
       await _account.get();

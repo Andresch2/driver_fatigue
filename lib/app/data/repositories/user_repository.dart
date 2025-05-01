@@ -1,13 +1,9 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:fatigue_control/app/constants/constants.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 
 class UserRepository {
-  final Client client = Client()
-    ..setEndpoint(AppwriteConstants.endpoint)
-    ..setProject(AppwriteConstants.projectId)
-    ..setSelfSigned(status: true);
-
   late final Databases databases = Databases(client);
 
   Future<void> registerUser({
@@ -18,23 +14,23 @@ class UserRepository {
   }) async {
     try {
       await databases.createDocument(
-        databaseId:    AppwriteConstants.databaseId,
-        collectionId:  AppwriteConstants.usersCollectionId,
-        documentId:    userId,
+        databaseId:   AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.usersCollectionId,
+        documentId:   userId,
         data: {
-          'userId'   : userId,
-          'name'     : name,
-          'email'    : email,
-          'password' : password,
+          'userId'  : userId,
+          'name'    : name,
+          'email'   : email,
+          'password': password,
         },
       );
     } catch (e) {
-      // ignore: avoid_print
       print('Error al registrar el usuario: $e');
       rethrow;
     }
   }
 
+  /// Obtiene un usuario por correo electrónico
   Future<Document?> getUserByEmail(String email) async {
     try {
       final result = await databases.listDocuments(
@@ -51,12 +47,11 @@ class UserRepository {
 
   Future<Document?> getUserById(String userId) async {
     try {
-      final document = await databases.getDocument(
+      return await databases.getDocument(
         databaseId:   AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
         documentId:   userId,
       );
-      return document;
     } catch (e) {
       print('Error al obtener usuario por ID: $e');
       return null;
@@ -86,7 +81,6 @@ class UserRepository {
         data: { 'profilePicture': fileUrl },
       );
     } catch (e) {
-      // ignore: avoid_print
       print('Error al actualizar la foto de perfil: $e');
       rethrow;
     }
