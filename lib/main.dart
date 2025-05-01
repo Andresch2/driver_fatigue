@@ -12,8 +12,7 @@ import 'package:get/get.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final authRepo = AuthRepository();
-  Get.put<AuthRepository>(authRepo, permanent: true);
+  Get.put<AuthRepository>(AuthRepository(), permanent: true);
   Get.put<HistoryRepository>(HistoryRepository(), permanent: true);
   Get.put<UserRepository>(UserRepository(), permanent: true);
 
@@ -21,22 +20,18 @@ void main() async {
   Get.put<UserController>(UserController(), permanent: true);
   Get.put<AnalysisController>(AnalysisController(), permanent: true);
 
-  final bool loggedIn = await authRepo.isLoggedIn();
-  final initialRoute = loggedIn ? AppRoutes.home : AppRoutes.login;
-
-  runApp(MyApp(initialRoute: initialRoute));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute;
-  const MyApp({ required this.initialRoute, super.key });
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Control de Fatiga',
       debugShowCheckedModeBanner: false,
-      initialRoute: initialRoute,
+      initialRoute: AppRoutes.splash,
       getPages: AppPages.pages,
       defaultTransition: Transition.fadeIn,
       theme: ThemeData(

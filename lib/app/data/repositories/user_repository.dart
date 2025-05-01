@@ -30,7 +30,6 @@ class UserRepository {
     }
   }
 
-  /// Obtiene un usuario por correo electrónico
   Future<Document?> getUserByEmail(String email) async {
     try {
       final result = await databases.listDocuments(

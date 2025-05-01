@@ -1,21 +1,18 @@
+import 'package:fatigue_control/app/controllers/analysis_controller.dart';
+import 'package:fatigue_control/app/data/models/analysis_record.dart';
+import 'package:fatigue_control/app/routes/app_routes.dart';
+import 'package:fatigue_control/app/widgets/custom_background.dart';
+import 'package:fatigue_control/app/widgets/shimmer_loading.dart';
+import 'package:fatigue_control/app/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../controllers/analysis_controller.dart';
-import '../controllers/user_controller.dart';
-import '../data/models/analysis_record.dart';
-import '../routes/app_routes.dart';
-import '../widgets/custom_background.dart';
-import '../widgets/shimmer_loading.dart';
-import '../widgets/status_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final analysisController = Get.find<AnalysisController>();
-    final userController     = Get.find<UserController>();
+    final AnalysisController ac = Get.find<AnalysisController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -23,25 +20,16 @@ class HomePage extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.person),
-            onPressed: () {
-              final uid = userController.userId.value;
-              if (uid.isNotEmpty) {
-                Get.toNamed(AppRoutes.profile, arguments: uid);
-              } else {
-                Get.snackbar('Error', 'Usuario no identificado');
-              }
-            },
+            onPressed: () => Get.toNamed(AppRoutes.profile),
           ),
         ],
       ),
       body: CustomBackground(
         child: Obx(() {
-          final List<AnalysisRecord> historial = analysisController.historial;
-          final bool isLoading = historial.isEmpty;
-
+          final List<AnalysisRecord> list = ac.historial;
           return ShimmerLoading(
-            isLoading: isLoading,
-            child: isLoading
+            isLoading: list.isEmpty,
+            child: list.isEmpty
                 ? ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: 5,
@@ -50,11 +38,11 @@ class HomePage extends StatelessWidget {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.all(8),
-                    itemCount: historial.length,
-                    itemBuilder: (context, index) {
-                      final record = historial[index];
+                    itemCount: list.length,
+                    itemBuilder: (ctx, i) {
+                      final AnalysisRecord r = list[i];
                       return Dismissible(
-                        key: ValueKey(record.id),
+                        key: ValueKey(r.id),
                         direction: DismissDirection.endToStart,
                         background: Container(
                           alignment: Alignment.centerRight,
@@ -64,32 +52,36 @@ class HomePage extends StatelessWidget {
                         ),
                         confirmDismiss: (_) async {
                           return await Get.dialog<bool>(
-                            AlertDialog(
-                              title: const Text('Confirmar'),
-                              content: const Text('¿Eliminar este análisis?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Get.back(result: false),
-                                  child: const Text('No'),
+                                AlertDialog(
+                                  title: const Text('Confirmar'),
+                                  content: const Text('¿Eliminar este análisis?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(result: false),
+                                      child: const Text('No'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Get.back(result: true),
+                                      child: const Text('Sí'),
+                                    ),
+                                  ],
                                 ),
-                                TextButton(
-                                  onPressed: () => Get.back(result: true),
-                                  child: const Text('Sí'),
-                                ),
-                              ],
-                            ),
-                          ) ?? false;
+                              ) ??
+                              false;
                         },
                         onDismissed: (_) {
-                          analysisController.deleteAnalysis(record.id, index);
+                          ac.deleteAnalysis(r.id, i);
                           Get.snackbar('Eliminado', 'Análisis borrado correctamente');
                         },
                         child: StatusCard(
-                          status:       record.status,
-                          date:         record.date,
-                          observations: record.observations,
-                          fatigueScore: record.fatigueScore,
-                          onTap: () => Get.toNamed(AppRoutes.detail, arguments: record.toMap()),
+                          status:       r.status,
+                          date:         r.date,
+                          observations: r.observations,
+                          fatigueScore: r.fatigueScore,
+                          onTap: () => Get.toNamed(
+                            AppRoutes.detail,
+                            arguments: r.toMap(),
+                          ),
                         ),
                       );
                     },

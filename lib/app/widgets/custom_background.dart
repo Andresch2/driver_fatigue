@@ -1,4 +1,3 @@
-// lib/app/widgets/backgrounds/custom_background.dart
 import 'package:flutter/material.dart';
 
 class CustomBackground extends StatelessWidget {

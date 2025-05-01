@@ -14,7 +14,6 @@ class AlertPage extends StatefulWidget {
 
 class _AlertPageState extends State<AlertPage> {
   final FlutterTts _tts = FlutterTts();
-  bool _isVibrating = false;
 
   @override
   void initState() {
@@ -36,12 +35,11 @@ class _AlertPageState extends State<AlertPage> {
       String msg = "¡Atención! Se detectó fatiga. Por favor, tome un descanso.";
       if (score > 0.6) msg += " Nivel de fatiga alto.";
       if (eyeP < 0.4)   msg += " Sus ojos indican somnolencia.";
-      if (yawn)        msg += " Se detectaron bostezos.";
+      if (yawn)         msg += " Se detectaron bostezos.";
 
       await _tts.speak(msg);
 
-      if (await Vibration.hasVibrator() ?? false) {
-        setState(() => _isVibrating = true);
+      if (await Vibration.hasVibrator()) {
         await Vibration.vibrate(
           pattern: score > 0.6
               ? [500, 1000, 500, 1000, 500, 1000]
@@ -56,7 +54,6 @@ class _AlertPageState extends State<AlertPage> {
   void _stopAlert() {
     _tts.stop();
     Vibration.cancel();
-    setState(() => _isVibrating = false);
     Get.offAllNamed(AppRoutes.home);
   }
 
@@ -71,7 +68,7 @@ class _AlertPageState extends State<AlertPage> {
   Widget build(BuildContext context) {
     final data = Get.arguments as Map<String, dynamic>? ?? {};
     final String estado = data['status']?.toString() ?? 'Fatiga detectada';
-    final double score = (data['fatigue_score'] ?? data['score_fatiga'] ?? 0.0) as double;
+    final double score  = (data['fatigue_score'] ?? data['score_fatiga'] ?? 0.0) as double;
 
     return Scaffold(
       backgroundColor: Colors.red.shade900,

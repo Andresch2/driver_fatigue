@@ -1,7 +1,8 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:fatigue_control/app/constants/constants.dart';
+import 'package:fatigue_control/app/controllers/auth_controller.dart';
+import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
-import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
@@ -18,30 +19,22 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final UserRepository _repo = UserRepository();
+  final UserController _userC = Get.find<UserController>();
+  final AuthController _authC = Get.find<AuthController>();
 
   Map<String, dynamic>? userData;
   bool isLoading = true;
   late final String userId;
-
   late final Account _account;
   late final Storage _storage;
 
   @override
   void initState() {
     super.initState();
+    userId = _userC.userId.value;
     _account = Account(client);
     _storage = Storage(client);
-
-    final arg = Get.arguments;
-    if (arg is! String || arg.isEmpty) {
-      Future.microtask(() {
-        Get.snackbar('Error', 'ID de usuario inválido');
-        Get.offAllNamed(AppRoutes.login);
-      });
-    } else {
-      userId = arg;
-      _loadUser();
-    }
+    _loadUser();
   }
 
   Future<void> _loadUser() async {
@@ -58,7 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _updateName() async {
-    final ctrl = TextEditingController(text: userData!['name'] as String? ?? '');
+    final ctrl = TextEditingController(text: userData?['name'] as String? ?? '');
     final newName = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -145,14 +138,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _logout() async {
-    try {
-      await _account.deleteSession(sessionId: 'current');
-    } catch (_) {}
-    Get.offAllNamed(AppRoutes.login);
+    await _authC.logout();
   }
 
   Widget _buildAvatar() {
-    final picUrl = userData!['profilePicture'] as String?;
+    final picUrl = userData?['profilePicture'] as String?;
     if (picUrl == null || picUrl.isEmpty) {
       return const Icon(Icons.person, size: 70, color: Colors.white);
     }

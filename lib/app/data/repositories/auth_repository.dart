@@ -1,23 +1,16 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
-import 'package:fatigue_control/app/constants/constants.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:get/get.dart';
 
 class AuthRepository extends GetxService {
-  late final Client _client;
   late final Account _account;
-
   final Rxn<models.User> user = Rxn<models.User>();
 
   @override
   void onInit() {
     super.onInit();
-    _client = Client()
-      ..setEndpoint(AppwriteConstants.endpoint)
-      ..setProject(AppwriteConstants.projectId)
-      ..setSelfSigned(status: true);
-
-    _account = Account(_client);
+    _account = Account(client);
     _loadCurrentUser();
   }
 
@@ -33,16 +26,8 @@ class AuthRepository extends GetxService {
         password: password,
         name: name,
       );
-
-      try {
-        await _account.deleteSession(sessionId: 'current');
-      } catch (_) {}
-
-      await _account.createEmailPasswordSession(
-        email: email,
-        password: password,
-      );
-
+      try { await _account.deleteSession(sessionId: 'current'); } catch (_) {}
+      await _account.createEmailPasswordSession(email: email, password: password);
       final me = await _account.get();
       user.value = me;
       return newUser;
@@ -57,15 +42,8 @@ class AuthRepository extends GetxService {
     required String password,
   }) async {
     try {
-      try {
-        await _account.deleteSession(sessionId: 'current');
-      } catch (_) {}
-
-      await _account.createEmailPasswordSession(
-        email: email,
-        password: password,
-      );
-
+      try { await _account.deleteSession(sessionId: 'current'); } catch (_) {}
+      await _account.createEmailPasswordSession(email: email, password: password);
       final me = await _account.get();
       user.value = me;
       return true;
@@ -82,7 +60,6 @@ class AuthRepository extends GetxService {
     user.value = null;
   }
 
-  /// Comprueba si hay sesión activa (útil al arrancar)
   Future<bool> isLoggedIn() async {
     try {
       await _account.get();
@@ -95,8 +72,7 @@ class AuthRepository extends GetxService {
   Future<void> _loadCurrentUser() async {
     if (await isLoggedIn()) {
       try {
-        final me = await _account.get();
-        user.value = me;
+        user.value = await _account.get();
       } catch (_) {
         user.value = null;
       }

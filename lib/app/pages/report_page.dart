@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/analysis_controller.dart';
-import '../controllers/user_controller.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
@@ -20,7 +19,6 @@ class ReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final analysisController = Get.find<AnalysisController>();
-    final userController     = Get.find<UserController>();
 
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null) {
@@ -32,7 +30,6 @@ class ReportPage extends StatelessWidget {
 
     final record  = AnalysisRecord.fromMap(args);
     final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-    final userId  = userController.userId.value;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Informe de Fatiga')),
@@ -104,9 +101,7 @@ class ReportPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(
-                        record.observations.isNotEmpty
-                          ? record.observations
-                          : 'No se detectó rostro.',
+                        record.observations.isNotEmpty ? record.observations : 'No se detectó rostro.',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
