@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:vibration/vibration.dart';
 
+import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
 import '../widgets/custom_button.dart';
 
@@ -14,11 +15,19 @@ class AlertPage extends StatefulWidget {
 
 class _AlertPageState extends State<AlertPage> {
   final FlutterTts _tts = FlutterTts();
+  late final AnalysisRecord record;
 
   @override
   void initState() {
     super.initState();
-    _triggerAlert();
+    final args = Get.arguments;
+    if (args is AnalysisRecord) {
+      record = args;
+      _triggerAlert();
+    } else {
+      Get.snackbar('Error', 'Datos inválidos para alerta.');
+      Get.offAllNamed(AppRoutes.home);
+    }
   }
 
   Future<void> _triggerAlert() async {
@@ -27,21 +36,16 @@ class _AlertPageState extends State<AlertPage> {
       await _tts.setSpeechRate(0.5);
       await _tts.setPitch(1.0);
 
-      final data = Get.arguments as Map<String, dynamic>? ?? {};
-      final double score = (data['fatigue_score'] ?? data['score_fatiga'] ?? 0.0) as double;
-      final double eyeP  = (data['eye_probability'] ?? data['probabilidad_ojos'] ?? 1.0) as double;
-      final bool yawn    = data['yawn_detected'] == true || data['bostezo_detectado'] == true;
-
       String msg = "¡Atención! Se detectó fatiga. Por favor, tome un descanso.";
-      if (score > 0.6) msg += " Nivel de fatiga alto.";
-      if (eyeP < 0.4)   msg += " Sus ojos indican somnolencia.";
-      if (yawn)         msg += " Se detectaron bostezos.";
+      if (record.fatigueScore > 0.6) msg += " Nivel de fatiga alto.";
+      if (record.eyeProbability < 0.4) msg += " Sus ojos indican somnolencia.";
+      if (record.yawnDetected == true) msg += " Se detectaron bostezos.";
 
       await _tts.speak(msg);
 
-      if (await Vibration.hasVibrator()) {
+      if (await Vibration.hasVibrator() ?? false) {
         await Vibration.vibrate(
-          pattern: score > 0.6
+          pattern: record.fatigueScore > 0.6
               ? [500, 1000, 500, 1000, 500, 1000]
               : [500, 1000, 500, 1000],
         );
@@ -66,10 +70,6 @@ class _AlertPageState extends State<AlertPage> {
 
   @override
   Widget build(BuildContext context) {
-    final data = Get.arguments as Map<String, dynamic>? ?? {};
-    final String estado = data['status']?.toString() ?? 'Fatiga detectada';
-    final double score  = (data['fatigue_score'] ?? data['score_fatiga'] ?? 0.0) as double;
-
     return Scaffold(
       backgroundColor: Colors.red.shade900,
       appBar: AppBar(
@@ -86,13 +86,13 @@ class _AlertPageState extends State<AlertPage> {
               const Icon(Icons.warning_amber_rounded, size: 100, color: Colors.white),
               const SizedBox(height: 20),
               Text(
-                estado,
+                record.status,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
               Text(
-                'Score de Fatiga: ${(score * 100).toStringAsFixed(1)}%',
+                'Score de Fatiga: ${(record.fatigueScore * 100).toStringAsFixed(1)}%',
                 style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
@@ -105,11 +105,11 @@ class _AlertPageState extends State<AlertPage> {
               CustomButton(
                 text: "Estoy despierto",
                 icon: Icons.check_circle_outline,
-                onPressed: _stopAlert,
+                onPressed:  _stopAlert,
                 backgroundColor: Colors.white,
                 textColor: Colors.red.shade900,
                 width: 220,
-                isLoading: false,
+                isLoading:    false,
               ),
             ],
           ),

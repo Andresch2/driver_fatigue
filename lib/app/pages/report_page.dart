@@ -3,7 +3,7 @@ import 'package:fatigue_control/app/constants/constants.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
-import 'package:fatigue_control/app/services/appwrite_client.dart';
+import 'package:fatigue_control/app/services/appwrite_client.dart'; // ← instancia global
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/analysis_controller.dart';
+import '../controllers/user_controller.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
@@ -19,6 +20,7 @@ class ReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final analysisController = Get.find<AnalysisController>();
+    final userController     = Get.find<UserController>();
 
     final args = Get.arguments as Map<String, dynamic>?;
     if (args == null) {
@@ -30,6 +32,7 @@ class ReportPage extends StatelessWidget {
 
     final record  = AnalysisRecord.fromMap(args);
     final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
+    final userId  = userController.userId.value;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Informe de Fatiga')),
@@ -101,7 +104,9 @@ class ReportPage extends StatelessWidget {
                       const SizedBox(height: 10),
                       const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(
-                        record.observations.isNotEmpty ? record.observations : 'No se detectó rostro.',
+                        record.observations.isNotEmpty
+                          ? record.observations
+                          : 'No se detectó rostro.',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],

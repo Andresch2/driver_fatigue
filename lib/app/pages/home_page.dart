@@ -1,4 +1,5 @@
 import 'package:fatigue_control/app/controllers/analysis_controller.dart';
+import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
@@ -13,6 +14,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AnalysisController ac = Get.find<AnalysisController>();
+    final UserController uc     = Get.find<UserController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -52,22 +54,15 @@ class HomePage extends StatelessWidget {
                         ),
                         confirmDismiss: (_) async {
                           return await Get.dialog<bool>(
-                                AlertDialog(
-                                  title: const Text('Confirmar'),
-                                  content: const Text('¿Eliminar este análisis?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Get.back(result: false),
-                                      child: const Text('No'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () => Get.back(result: true),
-                                      child: const Text('Sí'),
-                                    ),
-                                  ],
-                                ),
-                              ) ??
-                              false;
+                            AlertDialog(
+                              title: const Text('Confirmar'),
+                              content: const Text('¿Eliminar este análisis?'),
+                              actions: [
+                                TextButton(onPressed: () => Get.back(result: false), child: const Text('No')),
+                                TextButton(onPressed: () => Get.back(result: true), child: const Text('Sí')),
+                              ],
+                            ),
+                          ) ?? false;
                         },
                         onDismissed: (_) {
                           ac.deleteAnalysis(r.id, i);
@@ -78,10 +73,7 @@ class HomePage extends StatelessWidget {
                           date:         r.date,
                           observations: r.observations,
                           fatigueScore: r.fatigueScore,
-                          onTap: () => Get.toNamed(
-                            AppRoutes.detail,
-                            arguments: r.toMap(),
-                          ),
+                          onTap: () => Get.toNamed(AppRoutes.detail, arguments: r.toMap()),
                         ),
                       );
                     },

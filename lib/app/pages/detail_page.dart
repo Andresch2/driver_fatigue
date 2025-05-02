@@ -191,7 +191,6 @@ class DetailPage extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 8),
-                  
                   _buildIndicatorRow(
                     'Apertura de ojos',
                     probOjos.toDouble(),

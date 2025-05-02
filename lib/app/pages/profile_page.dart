@@ -18,48 +18,40 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final UserRepository _repo = UserRepository();
-  final UserController _userC = Get.find<UserController>();
-  final AuthController _authC = Get.find<AuthController>();
+  final UserRepository _repo   = UserRepository();
+  final UserController _userC  = Get.find<UserController>();
+  final AuthController _authC  = Get.find<AuthController>();
 
-  Map<String, dynamic>? userData;
-  bool isLoading = true;
-  late final String userId;
+  Map<String, dynamic> userData = {};
+  bool isLoading = false;
+
   late final Account _account;
   late final Storage _storage;
 
   @override
   void initState() {
     super.initState();
-    userId = _userC.userId.value;
     _account = Account(client);
     _storage = Storage(client);
-    _loadUser();
+    _loadUserFromController();
   }
 
-  Future<void> _loadUser() async {
-    try {
-      final doc = await _repo.getUserById(userId);
-      setState(() {
-        userData = doc?.data;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
-      Get.snackbar('Error', 'No se pudo cargar perfil: $e');
-    }
+  void _loadUserFromController() {
+    userData = {
+      'email': _userC.email.value,
+      'name':  _userC.nombre.value,
+      'profilePicture': null,
+    };
+    setState(() {});
   }
 
   Future<void> _updateName() async {
-    final ctrl = TextEditingController(text: userData?['name'] as String? ?? '');
+    final ctrl = TextEditingController(text: userData['name'] as String);
     final newName = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Editar nombre'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Nombre completo'),
-        ),
+        content: TextField(controller: ctrl, decoration: const InputDecoration(labelText: 'Nombre completo')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
           TextButton(onPressed: () => Navigator.pop(context, ctrl.text.trim()), child: const Text('Guardar')),
@@ -70,15 +62,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
     setState(() => isLoading = true);
     try {
-      await _repo.updateUserName(userId, newName);
-      setState(() {
-        userData!['name'] = newName;
-        isLoading = false;
-      });
+      await _repo.updateUserName(_userC.userId.value, newName);
+      _userC.nombre.value = newName;
+      _loadUserFromController();
       Get.snackbar('Éxito', 'Nombre actualizado');
     } catch (e) {
-      setState(() => isLoading = false);
       Get.snackbar('Error', 'No se pudo actualizar nombre: $e');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -97,15 +88,13 @@ class _ProfilePageState extends State<ProfilePage> {
       final url = '${AppwriteConstants.endpoint.replaceFirst('/v1','')}/storage/buckets/'
           '${AppwriteConstants.bucketId}/files/${uploaded.$id}/view?project=${AppwriteConstants.projectId}';
 
-      await _repo.updateUserProfilePicture(userId, url);
-      setState(() {
-        userData!['profilePicture'] = url;
-        isLoading = false;
-      });
+      await _repo.updateUserProfilePicture(_userC.userId.value, url);
+      userData['profilePicture'] = url;
       Get.snackbar('Éxito', 'Foto de perfil actualizada');
     } catch (e) {
-      setState(() => isLoading = false);
       Get.snackbar('Error', 'No se pudo subir imagen: $e');
+    } finally {
+      setState(() => isLoading = false);
     }
   }
 
@@ -116,11 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
         String pwd = '';
         return AlertDialog(
           title: const Text('Nueva contraseña'),
-          content: TextField(
-            onChanged: (v) => pwd = v,
-            decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'),
-            obscureText: true,
-          ),
+          content: TextField(onChanged: (v) => pwd = v, decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'), obscureText: true),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
             TextButton(onPressed: () => Navigator.pop(context, pwd), child: const Text('Aceptar')),
@@ -142,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAvatar() {
-    final picUrl = userData?['profilePicture'] as String?;
+    final picUrl = userData['profilePicture'] as String?;
     if (picUrl == null || picUrl.isEmpty) {
       return const Icon(Icons.person, size: 70, color: Colors.white);
     }
@@ -150,16 +135,13 @@ class _ProfilePageState extends State<ProfilePage> {
       radius: 70,
       backgroundColor: Colors.grey.shade200,
       backgroundImage: NetworkImage(picUrl),
-      onBackgroundImageError: (_, __) {
-        setState(() => userData!['profilePicture'] = null);
-      },
+      onBackgroundImageError: (_, __) => setState(() => userData['profilePicture'] = null),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    if (userData == null) return const Scaffold(body: Center(child: Text('Perfil no encontrado')));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi Perfil')),
@@ -173,11 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(height: 16),
               Center(child: _buildAvatar()),
               const SizedBox(height: 24),
-              CustomButton(
-                text: 'Cambiar Foto',
-                icon: Icons.photo_camera,
-                onPressed: _updateProfilePicture,
-              ),
+              CustomButton(text: 'Cambiar Foto', icon: Icons.photo_camera, onPressed: _updateProfilePicture),
               const SizedBox(height: 16),
               Card(
                 elevation: 2,
@@ -186,37 +164,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Text(userData!['email'] as String? ?? '—'),
+                      Text(userData['email'] as String? ?? '—'),
                       const SizedBox(height: 8),
-                      Text(
-                        userData!['name'] as String? ?? '—',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
+                      Text(userData['name'] as String? ?? '—', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
-                      CustomButton(
-                        text: 'Editar nombre',
-                        icon: Icons.edit,
-                        onPressed: _updateName,
-                        backgroundColor: Colors.green,
-                      ),
+                      CustomButton(text: 'Editar nombre', icon: Icons.edit, onPressed: _updateName, backgroundColor: Colors.green),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              CustomButton(
-                text: 'Cambiar Contraseña',
-                icon: Icons.lock,
-                onPressed: _changePassword,
-                backgroundColor: Colors.indigo,
-              ),
+              CustomButton(text: 'Cambiar Contraseña', icon: Icons.lock, onPressed: _changePassword, backgroundColor: Colors.indigo),
               const SizedBox(height: 16),
-              CustomButton(
-                text: 'Cerrar sesión',
-                icon: Icons.logout,
-                onPressed: _logout,
-                backgroundColor: Colors.red,
-              ),
+              CustomButton(text: 'Cerrar sesión', icon: Icons.logout, onPressed: _logout, backgroundColor: Colors.red),
             ],
           ),
         ),

@@ -19,9 +19,11 @@ class AnalysisController extends GetxController {
     userId.value = id;
   }
 
+  void reloadHistory() => _loadHistory();
+
   Future<void> _loadHistory() async {
     if (userId.isEmpty) return;
-    final h = await _historyService.getHistory(userId.value);
+    final List<AnalysisRecord> h = await _historyService.getHistory(userId.value);
     historial.assignAll(h);
   }
 

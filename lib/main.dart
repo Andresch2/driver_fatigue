@@ -1,6 +1,7 @@
 import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/controllers/auth_controller.dart';
 import 'package:fatigue_control/app/controllers/user_controller.dart';
+import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/data/repositories/auth_repository.dart';
 import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
@@ -8,9 +9,17 @@ import 'package:fatigue_control/app/routes/app_pages.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(AnalysisRecordAdapter());
+  await Hive.openBox<AnalysisRecord>('history');
+
+  await GetStorage.init();
 
   Get.put<AuthRepository>(AuthRepository(), permanent: true);
   Get.put<HistoryRepository>(HistoryRepository(), permanent: true);
@@ -25,7 +34,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
@@ -37,10 +45,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 2,
-        ),
+        appBarTheme: const AppBarTheme(centerTitle: true, elevation: 2),
       ),
     );
   }

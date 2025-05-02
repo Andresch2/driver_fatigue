@@ -1,4 +1,6 @@
+import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/controllers/auth_controller.dart';
+import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,11 +23,33 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _navigate() async {
     await Future.delayed(const Duration(seconds: 1));
+
+    if (_authC.hasLocalSession) {
+      final uc = Get.find<UserController>();
+      uc.setUser(
+        id:             _authC.storedUserId,
+        nombreUsuario:  _authC.storedUserName,
+        correo:         _authC.storedUserEmail,
+      );
+      final ac = Get.find<AnalysisController>();
+      ac.setUserId(_authC.storedUserId);
+
+      Get.offAllNamed(AppRoutes.home);
+      return;
+    }
+
     final loggedIn = await _authC.checkAuth();
-    if (loggedIn) {
+    if (!loggedIn) {
+      Get.offAllNamed(AppRoutes.login);
+      return;
+    }
+
+
+    final hasProfile = await _authC.checkUserProfileExists();
+    if (hasProfile) {
       Get.offAllNamed(AppRoutes.home);
     } else {
-      Get.offAllNamed(AppRoutes.login);
+      await _authC.logout();
     }
   }
 
