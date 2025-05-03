@@ -1,5 +1,5 @@
 class AppwriteConstants {
-  static const String endpoint = 'https://cloud.appwrite.io/v1';
+  static const String endpoint = 'https://fra.cloud.appwrite.io/v1';
   static const String projectId = '67f16a0f0000f9d465e0';
   static const String bucketId = '67f68635002a4fc5371e';
   static const String databaseId = '67f1800f0024469e7a88';

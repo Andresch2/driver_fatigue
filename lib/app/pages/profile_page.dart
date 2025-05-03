@@ -12,18 +12,17 @@ import 'package:get/get.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
-
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final UserRepository _repo   = UserRepository();
-  final UserController _userC  = Get.find<UserController>();
-  final AuthController _authC  = Get.find<AuthController>();
+  final _repo   = UserRepository();
+  final _userC  = Get.find<UserController>();
+  final _authC  = Get.find<AuthController>();
 
-  Map<String, dynamic> userData = {};
-  bool isLoading = false;
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
 
   late final Account _account;
   late final Storage _storage;
@@ -33,20 +32,49 @@ class _ProfilePageState extends State<ProfilePage> {
     super.initState();
     _account = Account(client);
     _storage = Storage(client);
-    _loadUserFromController();
+    _loadUserFromDB();
   }
 
-  void _loadUserFromController() {
-    userData = {
-      'email': _userC.email.value,
-      'name':  _userC.nombre.value,
-      'profilePicture': null,
-    };
-    setState(() {});
+  Future<void> _loadUserFromDB() async {
+    setState(() => isLoading = true);
+    try {
+      final doc = await _repo.getUserById(_userC.userId.value);
+      userData = doc?.data;
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo cargar perfil: $e');
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _updateProfilePicture() async {
+    final type = XTypeGroup(label: 'Images', extensions: ['png','jpg','jpeg']);
+    final file = await openFile(acceptedTypeGroups: [type]);
+    if (file == null) return;
+
+    setState(() => isLoading = true);
+    try {
+      final uploaded = await _storage.createFile(
+        bucketId: AppwriteConstants.bucketId,
+        fileId: ID.unique(),
+        file: InputFile.fromPath(path: file.path),
+      );
+
+      final url = '${AppwriteConstants.endpoint}/storage/buckets/'
+        '${AppwriteConstants.bucketId}/files/${uploaded.$id}/view'
+        '?project=${AppwriteConstants.projectId}';
+
+      await _repo.updateUserProfilePicture(_userC.userId.value, url);
+      await _loadUserFromDB();
+      Get.snackbar('Éxito', 'Foto de perfil actualizada');
+    } catch (e) {
+      Get.snackbar('Error', 'No se pudo subir imagen: $e');
+      setState(() => isLoading = false);
+    }
   }
 
   Future<void> _updateName() async {
-    final ctrl = TextEditingController(text: userData['name'] as String);
+    final ctrl = TextEditingController(text: userData?['name'] ?? '');
     final newName = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -64,36 +92,10 @@ class _ProfilePageState extends State<ProfilePage> {
     try {
       await _repo.updateUserName(_userC.userId.value, newName);
       _userC.nombre.value = newName;
-      _loadUserFromController();
+      await _loadUserFromDB();
       Get.snackbar('Éxito', 'Nombre actualizado');
     } catch (e) {
       Get.snackbar('Error', 'No se pudo actualizar nombre: $e');
-    } finally {
-      setState(() => isLoading = false);
-    }
-  }
-
-  Future<void> _updateProfilePicture() async {
-    final type = XTypeGroup(label: 'Images', extensions: ['png', 'jpg', 'jpeg']);
-    final file = await openFile(acceptedTypeGroups: [type]);
-    if (file == null) return;
-
-    setState(() => isLoading = true);
-    try {
-      final uploaded = await _storage.createFile(
-        bucketId: AppwriteConstants.bucketId,
-        fileId: ID.unique(),
-        file: InputFile.fromPath(path: file.path),
-      );
-      final url = '${AppwriteConstants.endpoint.replaceFirst('/v1','')}/storage/buckets/'
-          '${AppwriteConstants.bucketId}/files/${uploaded.$id}/view?project=${AppwriteConstants.projectId}';
-
-      await _repo.updateUserProfilePicture(_userC.userId.value, url);
-      userData['profilePicture'] = url;
-      Get.snackbar('Éxito', 'Foto de perfil actualizada');
-    } catch (e) {
-      Get.snackbar('Error', 'No se pudo subir imagen: $e');
-    } finally {
       setState(() => isLoading = false);
     }
   }
@@ -105,7 +107,11 @@ class _ProfilePageState extends State<ProfilePage> {
         String pwd = '';
         return AlertDialog(
           title: const Text('Nueva contraseña'),
-          content: TextField(onChanged: (v) => pwd = v, decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'), obscureText: true),
+          content: TextField(
+            onChanged: (v) => pwd = v,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Mínimo 6 caracteres'),
+          ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
             TextButton(onPressed: () => Navigator.pop(context, pwd), child: const Text('Aceptar')),
@@ -127,27 +133,31 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildAvatar() {
-    final picUrl = userData['profilePicture'] as String?;
+    final picUrl = userData?['profilePicture'] as String?;
     if (picUrl == null || picUrl.isEmpty) {
       return const Icon(Icons.person, size: 70, color: Colors.white);
     }
-    return CircleAvatar(
-      radius: 70,
-      backgroundColor: Colors.grey.shade200,
-      backgroundImage: NetworkImage(picUrl),
-      onBackgroundImageError: (_, __) => setState(() => userData['profilePicture'] = null),
+    return ClipOval(
+      child: Image.network(
+        picUrl,
+        width: 140, height: 140, fit: BoxFit.cover,
+        loadingBuilder: (_, child, prog) => prog == null ? child : const CircularProgressIndicator(),
+        errorBuilder: (_, __, ___) {
+          return const Icon(Icons.error, size: 70, color: Colors.red);
+        },
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (userData == null) return const Scaffold(body: Center(child: Text('Perfil no encontrado')));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi Perfil')),
       body: CustomBackground(
-        showIcons: true,
-        iconOpacity: 0.07,
+        showIcons: true, iconOpacity: 0.07,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(
@@ -164,11 +174,17 @@ class _ProfilePageState extends State<ProfilePage> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      Text(userData['email'] as String? ?? '—'),
+                      Text(userData!['email'] as String? ?? '—'),
                       const SizedBox(height: 8),
-                      Text(userData['name'] as String? ?? '—', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(userData!['name'] as String? ?? '—',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 12),
-                      CustomButton(text: 'Editar nombre', icon: Icons.edit, onPressed: _updateName, backgroundColor: Colors.green),
+                      CustomButton(
+                        text: 'Editar nombre',
+                        icon: Icons.edit,
+                        onPressed: _updateName,
+                        backgroundColor: Colors.green,
+                      ),
                     ],
                   ),
                 ),
