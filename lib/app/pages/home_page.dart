@@ -1,5 +1,4 @@
 import 'package:fatigue_control/app/controllers/analysis_controller.dart';
-import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
@@ -14,7 +13,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AnalysisController ac = Get.find<AnalysisController>();
-    final UserController uc     = Get.find<UserController>();
 
     return Scaffold(
       appBar: AppBar(

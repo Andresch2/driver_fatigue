@@ -27,12 +27,12 @@ class AuthController extends GetxController {
         final uc = Get.find<UserController>();
         uc.setUser(
           id:            u.$id,
-          nombreUsuario: u.name ?? '',
+          nombreUsuario: u.name,
           correo:        u.email,
         );
 
         _storage.write('userId',    u.$id);
-        _storage.write('userName',  u.name   ?? '');
+        _storage.write('userName',  u.name);
         _storage.write('userEmail', u.email);
 
         final ac = Get.find<AnalysisController>();

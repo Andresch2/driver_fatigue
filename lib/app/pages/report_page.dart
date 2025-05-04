@@ -3,7 +3,7 @@ import 'package:fatigue_control/app/constants/constants.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
-import 'package:fatigue_control/app/services/appwrite_client.dart'; // ← instancia global
+import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
 import 'package:fl_chart/fl_chart.dart';

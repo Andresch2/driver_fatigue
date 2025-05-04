@@ -6,6 +6,7 @@ import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
 import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/custom_button.dart';
+import 'package:fatigue_control/app/widgets/user_info_card.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -17,9 +18,9 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final _repo   = UserRepository();
-  final _userC  = Get.find<UserController>();
-  final _authC  = Get.find<AuthController>();
+  final _repo = UserRepository();
+  final _userC = Get.find<UserController>();
+  final _authC = Get.find<AuthController>();
 
   Map<String, dynamic>? userData;
   bool isLoading = true;
@@ -48,7 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _updateProfilePicture() async {
-    final type = XTypeGroup(label: 'Images', extensions: ['png','jpg','jpeg']);
+    final type = XTypeGroup(label: 'Images', extensions: ['png', 'jpg', 'jpeg']);
     final file = await openFile(acceptedTypeGroups: [type]);
     if (file == null) return;
 
@@ -61,8 +62,8 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
       final url = '${AppwriteConstants.endpoint}/storage/buckets/'
-        '${AppwriteConstants.bucketId}/files/${uploaded.$id}/view'
-        '?project=${AppwriteConstants.projectId}';
+          '${AppwriteConstants.bucketId}/files/${uploaded.$id}/view'
+          '?project=${AppwriteConstants.projectId}';
 
       await _repo.updateUserProfilePicture(_userC.userId.value, url);
       await _loadUserFromDB();
@@ -132,23 +133,6 @@ class _ProfilePageState extends State<ProfilePage> {
     await _authC.logout();
   }
 
-  Widget _buildAvatar() {
-    final picUrl = userData?['profilePicture'] as String?;
-    if (picUrl == null || picUrl.isEmpty) {
-      return const Icon(Icons.person, size: 70, color: Colors.white);
-    }
-    return ClipOval(
-      child: Image.network(
-        picUrl,
-        width: 140, height: 140, fit: BoxFit.cover,
-        loadingBuilder: (_, child, prog) => prog == null ? child : const CircularProgressIndicator(),
-        errorBuilder: (_, __, ___) {
-          return const Icon(Icons.error, size: 70, color: Colors.red);
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -157,38 +141,20 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Mi Perfil')),
       body: CustomBackground(
-        showIcons: true, iconOpacity: 0.07,
+        showIcons: true,
+        iconOpacity: 0.07,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(
             children: [
-              const SizedBox(height: 16),
-              Center(child: _buildAvatar()),
+              UserInfoCard(
+                avatarUrl: userData!['profilePicture'] as String? ?? '',
+                name: userData!['name'] as String? ?? '—',
+                email: userData!['email'] as String? ?? '—',
+                onEdit: _updateName,
+              ),
               const SizedBox(height: 24),
               CustomButton(text: 'Cambiar Foto', icon: Icons.photo_camera, onPressed: _updateProfilePicture),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(userData!['email'] as String? ?? '—'),
-                      const SizedBox(height: 8),
-                      Text(userData!['name'] as String? ?? '—',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 12),
-                      CustomButton(
-                        text: 'Editar nombre',
-                        icon: Icons.edit,
-                        onPressed: _updateName,
-                        backgroundColor: Colors.green,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 16),
               CustomButton(text: 'Cambiar Contraseña', icon: Icons.lock, onPressed: _changePassword, backgroundColor: Colors.indigo),
               const SizedBox(height: 16),
