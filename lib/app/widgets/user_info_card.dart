@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class UserInfoCard extends StatelessWidget {
-  final String avatarUrl;
+  final String? avatarUrl;
   final String name;
   final String email;
   final VoidCallback onEdit;
 
   const UserInfoCard({
     super.key,
-    required this.avatarUrl,
+    this.avatarUrl,
     required this.name,
     required this.email,
     required this.onEdit,
@@ -16,48 +16,54 @@ class UserInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 8,
+      shadowColor: theme.colorScheme.primary.withOpacity(0.25),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+
             CircleAvatar(
-              radius: 60,
-              backgroundImage: NetworkImage(avatarUrl),
+              radius: 56,
+              backgroundColor: theme.colorScheme.secondary.withOpacity(0.2),
+              backgroundImage:
+                  avatarUrl != null ? NetworkImage(avatarUrl!) : null,
+              child: avatarUrl == null
+                  ? Icon(Icons.person, size: 56, color: theme.colorScheme.onSecondary)
+                  : null,
             ),
             const SizedBox(height: 16),
             Text(
               name,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.email, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
+                Icon(Icons.email, size: 18, color: theme.colorScheme.onSurfaceVariant),
+                const SizedBox(width: 6),
                 Text(
                   email,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: theme.textTheme.bodyMedium,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
+            const SizedBox(height: 20),
+            OutlinedButton.icon(
               onPressed: onEdit,
-              icon: const Icon(Icons.edit),
-              label: const Text('Editar Perfil'),
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              icon: Icon(Icons.edit, color: theme.colorScheme.primary),
+              label: Text('Editar perfil',
+                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.primary)),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: theme.colorScheme.primary),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
               ),
             ),
           ],

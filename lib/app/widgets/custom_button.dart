@@ -5,10 +5,10 @@ class CustomButton extends StatelessWidget {
   final IconData? icon;
   final VoidCallback onPressed;
   final bool isLoading;
+  final Gradient? backgroundGradient;
   final Color? backgroundColor;
   final Color? textColor;
   final double? width;
-
 
   const CustomButton({
     super.key,
@@ -16,6 +16,7 @@ class CustomButton extends StatelessWidget {
     this.icon,
     required this.onPressed,
     this.isLoading = false,
+    this.backgroundGradient,
     this.backgroundColor,
     this.textColor,
     this.width,
@@ -23,44 +24,69 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final Color primary = backgroundColor ?? theme.colorScheme.primary;
+    final Color fg = textColor ?? theme.colorScheme.onPrimary;
+
     return SizedBox(
       width: width ?? double.infinity,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? Theme.of(context).primaryColor,
-          foregroundColor: textColor ?? Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 2,
-        ),
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: backgroundGradient ??
+              LinearGradient(
+                colors: [primary, primary.withOpacity(0.85)],
               ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: isLoading ? null : onPressed,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+              child: Center(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, anim) =>
+                      ScaleTransition(scale: anim, child: child),
+                  child: isLoading
+                      ? SizedBox(
+                          key: const ValueKey('loading'),
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(fg),
+                          ),
+                        )
+                      : Row(
+                          key: const ValueKey('label'),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (icon != null) ...[
+                              Icon(icon, color: fg),
+                              const SizedBox(width: 8),
+                            ],
+                            Text(
+                              text,
+                              style: theme.textTheme.bodyLarge
+                                  ?.copyWith(color: fg, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
