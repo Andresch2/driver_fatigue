@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class StatusCard extends StatelessWidget {
   final String status;
@@ -24,6 +25,13 @@ class StatusCard extends StatelessWidget {
     final IconData iconData = isFatigued
         ? Icons.warning_amber_rounded
         : Icons.check_circle_rounded;
+
+    final parsedDate = DateTime.tryParse(date);
+    final formattedDate = parsedDate != null
+        ? DateFormat('dd/MM/yyyy HH:mm').format(parsedDate)
+        : date;
+
+    final scorePct = (fatigueScore * 100).toStringAsFixed(1);
 
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0.0, end: 1.0),
@@ -65,9 +73,12 @@ class StatusCard extends StatelessWidget {
                             ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 4),
-                      Text('Fecha: $date', style: theme.textTheme.bodySmall),
                       Text(
-                        'Fatigue score: ${fatigueScore.toStringAsFixed(2)}',
+                        'Fecha: $formattedDate',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                      Text(
+                        'Score de Fatiga: $scorePct%',
                         style: theme.textTheme.bodySmall,
                       ),
                       const SizedBox(height: 4),

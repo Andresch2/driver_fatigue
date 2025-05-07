@@ -39,7 +39,7 @@ class _AlertPageState extends State<AlertPage> {
       String msg = "¡Atención! Se detectó fatiga. Por favor, tome un descanso.";
       if (record.fatigueScore > 0.6) msg += " Nivel de fatiga alto.";
       if (record.eyeProbability < 0.4) msg += " Sus ojos indican somnolencia.";
-      if (record.yawnDetected == true) msg += " Se detectaron bostezos.";
+      if (record.yawnDetected) msg += " Se detectaron bostezos.";
 
       await _tts.speak(msg);
 
@@ -58,7 +58,10 @@ class _AlertPageState extends State<AlertPage> {
   void _stopAlert() {
     _tts.stop();
     Vibration.cancel();
-    Get.offAllNamed(AppRoutes.home);
+    Get.offAllNamed(
+      AppRoutes.report,
+      arguments: record.toMap(),
+    );
   }
 
   @override
@@ -105,11 +108,11 @@ class _AlertPageState extends State<AlertPage> {
               CustomButton(
                 text: "Estoy despierto",
                 icon: Icons.check_circle_outline,
-                onPressed:  _stopAlert,
+                onPressed: _stopAlert,
                 backgroundColor: Colors.white,
                 textColor: Colors.red.shade900,
                 width: 220,
-                isLoading:    false,
+                isLoading: false,
               ),
             ],
           ),

@@ -21,8 +21,8 @@ class ReportPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final analysisController = Get.find<AnalysisController>();
     final userController     = Get.find<UserController>();
-
     final args = Get.arguments as Map<String, dynamic>?;
+
     if (args == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Informe de Fatiga')),
@@ -30,9 +30,12 @@ class ReportPage extends StatelessWidget {
       );
     }
 
-    final record  = AnalysisRecord.fromMap(args);
-    final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-    final userId  = userController.userId.value;
+    final record = AnalysisRecord.fromMap(args);
+
+    final dateStr = DateFormat('yyyy-MM-dd HH:mm:ss')
+        .format(DateTime.now());
+
+    final scorePct = (record.fatigueScore * 100).toStringAsFixed(1);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Informe de Fatiga')),
@@ -63,11 +66,13 @@ class ReportPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        'Score de Fatiga: ${(record.fatigueScore * 100).toStringAsFixed(1)}%',
+                        'Score de Fatiga: $scorePct%',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: record.fatigueScore > 0.4 ? Colors.red : Colors.green,
+                          color: record.fatigueScore > 0.4
+                              ? Colors.red
+                              : Colors.green,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -154,8 +159,7 @@ class ReportPage extends StatelessWidget {
                   icon: Icons.save,
                   onPressed: () async {
                     try {
-                      final databases = Databases(client);
-                      await databases.createDocument(
+                      await Databases(client).createDocument(
                         databaseId:   AppwriteConstants.databaseId,
                         collectionId: AppwriteConstants.reportsCollectionId,
                         documentId:   ID.unique(),

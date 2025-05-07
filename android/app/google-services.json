@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "715675435434",
+    "project_id": "fatigue-515fd",
+    "storage_bucket": "fatigue-515fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:715675435434:android:067b2b3c026f68f97aebd3",
+        "android_client_info": {
+          "package_name": "com.example.fatigue_control"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByOmZy3Zsqr43u1KoqG8qEpRQeGefio-4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

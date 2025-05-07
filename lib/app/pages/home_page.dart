@@ -7,13 +7,24 @@ import 'package:fatigue_control/app/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final AnalysisController ac = Get.find<AnalysisController>();
+  State<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends State<HomePage> {
+  final AnalysisController ac = Get.find<AnalysisController>();
+
+  @override
+  void initState() {
+    super.initState();
+    ac.reloadHistory();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Historial de Análisis'),
@@ -39,8 +50,8 @@ class HomePage extends StatelessWidget {
                 : ListView.builder(
                     padding: const EdgeInsets.all(8),
                     itemCount: list.length,
-                    itemBuilder: (ctx, i) {
-                      final AnalysisRecord r = list[i];
+                    itemBuilder: (_, i) {
+                      final r = list[i];
                       return Dismissible(
                         key: ValueKey(r.id),
                         direction: DismissDirection.endToStart,
@@ -52,15 +63,22 @@ class HomePage extends StatelessWidget {
                         ),
                         confirmDismiss: (_) async {
                           return await Get.dialog<bool>(
-                            AlertDialog(
-                              title: const Text('Confirmar'),
-                              content: const Text('¿Eliminar este análisis?'),
-                              actions: [
-                                TextButton(onPressed: () => Get.back(result: false), child: const Text('No')),
-                                TextButton(onPressed: () => Get.back(result: true), child: const Text('Sí')),
-                              ],
-                            ),
-                          ) ?? false;
+                                AlertDialog(
+                                  title: const Text('Confirmar'),
+                                  content: const Text('¿Eliminar este análisis?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Get.back(result: false),
+                                      child: const Text('No'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () => Get.back(result: true),
+                                      child: const Text('Sí'),
+                                    ),
+                                  ],
+                                ),
+                              ) ??
+                              false;
                         },
                         onDismissed: (_) {
                           ac.deleteAnalysis(r.id, i);

@@ -1,12 +1,13 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:intl/intl.dart';
 
+import '../controllers/analysis_controller.dart';
 import '../controllers/user_controller.dart';
 import '../data/models/analysis_record.dart';
+import '../data/repositories/history_repository.dart';
 import '../routes/app_routes.dart';
 import '../services/ia_service.dart';
 import '../widgets/custom_background.dart';
@@ -14,7 +15,6 @@ import '../widgets/custom_button.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});
-
   @override
   State<ScanPage> createState() => _ScanPageState();
 }
@@ -36,7 +36,7 @@ class _ScanPageState extends State<ScanPage> {
     try {
       final cameras = await availableCameras();
       final frontCam = cameras.firstWhere(
-        (cam) => cam.lensDirection == CameraLensDirection.front,
+        (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => cameras.first,
       );
       _cameraController = CameraController(
@@ -74,27 +74,40 @@ class _ScanPageState extends State<ScanPage> {
     }
 
     try {
-      final imageFile = await _cameraController.takePicture();
-      final inputImage = InputImage.fromFilePath(imageFile.path);
+      final picture = await _cameraController.takePicture();
+      final inputImage = InputImage.fromFilePath(picture.path);
       final resultado = await _iaService.analizarFatiga(inputImage);
 
-      final dateStr = DateFormat('yyyy-MM-dd').format(DateTime.now().toUtc());
-      final userId  = Get.find<UserController>().userId.value;
-
+      final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final userId = Get.find<UserController>().userId.value;
       final record = AnalysisRecord(
-        id:               DateTime.now().millisecondsSinceEpoch.toString(),
-        userId:           userId,
-        status:           resultado['estado']?.toString() ?? 'No Detectado',
-        date:             dateStr,
-        observations:     resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
-        eyeProbability:   (resultado['probabilidad_ojos'] as num?)?.toDouble() ?? 1.0,
-        yawnDetected:     (resultado['bostezo_detectado'] as bool?) ?? false,
-        headTilt:         (resultado['inclinacion_cabeza'] as num?)?.toDouble() ?? 0.0,
-        fatigueScore:     (resultado['score_fatiga'] as num?)?.toDouble() ?? 0.0,
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        status: resultado['estado']?.toString() ?? 'No Detectado',
+        date: now,
+        observations: resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
+        eyeProbability: (resultado['probabilidad_ojos'] as num?)?.toDouble() ?? 1.0,
+        yawnDetected: (resultado['bostezo_detectado'] as bool?) ?? false,
+        headTilt: (resultado['inclinacion_cabeza'] as num?)?.toDouble() ?? 0.0,
+        fatigueScore: (resultado['score_fatiga'] as num?)?.toDouble() ?? 0.0,
+      );
+
+      final histDoc = await HistoryRepository().saveToHistory(
+        userId: record.userId,
+        status: record.status,
+        date: record.date,
+        observations: record.observations,
+        eyeProbability: record.eyeProbability,
+        yawnDetected: record.yawnDetected,
+        headTilt: record.headTilt,
+        fatigueScore: record.fatigueScore,
+      );
+      Get.find<AnalysisController>().agregarAnalisis(
+        AnalysisRecord.fromMap({...record.toMap(), r'$id': histDoc.$id}),
       );
 
       if (resultado['fatigado'] == true) {
-        await _mostrarAlertaFatiga(record);
+        Get.toNamed(AppRoutes.alert, arguments: record);
       } else {
         Get.toNamed(AppRoutes.report, arguments: record.toMap());
       }
@@ -108,15 +121,6 @@ class _ScanPageState extends State<ScanPage> {
         });
       }
     }
-  }
-
-  Future<void> _mostrarAlertaFatiga(AnalysisRecord record) async {
-    final tts = FlutterTts();
-    await tts.setLanguage("es-ES");
-    await tts.setPitch(1.0);
-    await tts.setSpeechRate(0.5);
-    await tts.speak("¡Atención! Se detectaron signos de fatiga. Por favor tome un descanso.");
-    Get.toNamed(AppRoutes.alert, arguments: record);
   }
 
   @override

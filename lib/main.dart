@@ -7,12 +7,15 @@ import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_pages.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-void main() async {
+import 'app/services/push_service.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
@@ -20,6 +23,9 @@ void main() async {
   await Hive.openBox<AnalysisRecord>('history');
 
   await GetStorage.init();
+
+  await Firebase.initializeApp();
+  await PushService.init();
 
   Get.put<AuthRepository>(AuthRepository(), permanent: true);
   Get.put<HistoryRepository>(HistoryRepository(), permanent: true);

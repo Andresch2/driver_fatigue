@@ -6,6 +6,7 @@ import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/auth_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -13,6 +14,7 @@ class AuthController extends GetxController {
   final AuthRepository _repo   = Get.find<AuthRepository>();
   final GetStorage _storage    = GetStorage();
   late final Databases _db;
+  late final Account _account;
 
   Rxn<models.User> get user    => _repo.user;
   final RxBool isLoading       = false.obs;
@@ -21,9 +23,11 @@ class AuthController extends GetxController {
   void onInit() {
     super.onInit();
     _db = Databases(client);
+    _account = Account(client);
 
-    ever<models.User?>(_repo.user, (u) {
+    ever<models.User?>(_repo.user, (u) async {
       if (u != null) {
+
         final uc = Get.find<UserController>();
         uc.setUser(
           id:            u.$id,
@@ -31,12 +35,18 @@ class AuthController extends GetxController {
           correo:        u.email,
         );
 
-        _storage.write('userId',    u.$id);
-        _storage.write('userName',  u.name);
-        _storage.write('userEmail', u.email);
+        _storage
+          ..write('userId',    u.$id)
+          ..write('userName',  u.name)
+          ..write('userEmail', u.email);
 
         final ac = Get.find<AnalysisController>();
         ac.setUserId(u.$id);
+
+        String? token = await FirebaseMessaging.instance.getToken();
+        if (token != null && token.isNotEmpty) {
+          await _account.updatePrefs(prefs: { 'fcmToken': token });
+        }
 
         Get.offAllNamed(AppRoutes.home);
       }

@@ -22,7 +22,6 @@ class UserController extends GetxController {
     userId.value = id;
     nombre.value = nombreUsuario;
     email.value  = correo;
-    // ignore: avoid_print
     print('User actualizado: id=$id, nombre=$nombreUsuario, correo=$correo');
   }
 
@@ -41,7 +40,6 @@ class UserController extends GetxController {
         documentId:   userId.value,
       );
     } on AppwriteException catch (e) {
-      // ignore: avoid_print
       print('Error al obtener perfil: ${e.message}');
       return null;
     }
