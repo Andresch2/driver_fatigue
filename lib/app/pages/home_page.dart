@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    ac.reloadHistory();
   }
 
   @override
@@ -89,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                           date:         r.date,
                           observations: r.observations,
                           fatigueScore: r.fatigueScore,
-                          onTap: () => Get.toNamed(AppRoutes.detail, arguments: r.toMap()),
+                          onTap:        () => Get.toNamed(AppRoutes.detail, arguments: r.toMap()),
                         ),
                       );
                     },

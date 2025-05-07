@@ -19,12 +19,10 @@ class AnalysisController extends GetxController {
     userId.value = id;
   }
 
-  void reloadHistory() => _loadHistory();
-
   Future<void> _loadHistory() async {
-    if (userId.isEmpty) return;
-    final List<AnalysisRecord> h = await _historyService.getHistory(userId.value);
-    historial.assignAll(h);
+    if (userId.value.isEmpty) return;
+    final List<AnalysisRecord> data = await _historyService.getHistory(userId.value);
+    historial.assignAll(data);
   }
 
   Future<void> deleteAnalysis(String documentId, int index) async {

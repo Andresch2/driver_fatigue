@@ -43,7 +43,7 @@ class _AlertPageState extends State<AlertPage> {
 
       await _tts.speak(msg);
 
-      if (await Vibration.hasVibrator() ?? false) {
+      if (await Vibration.hasVibrator()) {
         await Vibration.vibrate(
           pattern: record.fatigueScore > 0.6
               ? [500, 1000, 500, 1000, 500, 1000]

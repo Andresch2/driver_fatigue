@@ -12,7 +12,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 import '../controllers/analysis_controller.dart';
-import '../controllers/user_controller.dart';
 
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
@@ -20,7 +19,6 @@ class ReportPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final analysisController = Get.find<AnalysisController>();
-    final userController     = Get.find<UserController>();
     final args = Get.arguments as Map<String, dynamic>?;
 
     if (args == null) {
@@ -31,10 +29,7 @@ class ReportPage extends StatelessWidget {
     }
 
     final record = AnalysisRecord.fromMap(args);
-
-    final dateStr = DateFormat('yyyy-MM-dd HH:mm:ss')
-        .format(DateTime.now());
-
+    final dateStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
     final scorePct = (record.fatigueScore * 100).toStringAsFixed(1);
 
     return Scaffold(
@@ -45,7 +40,6 @@ class ReportPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Card(
                 elevation: 3,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -110,19 +104,17 @@ class ReportPage extends StatelessWidget {
                       const Text('Observaciones:', style: TextStyle(fontWeight: FontWeight.bold)),
                       Text(
                         record.observations.isNotEmpty
-                          ? record.observations
-                          : 'No se detectó rostro.',
+                            ? record.observations
+                            : 'No se detectó rostro.',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
               const Text('Gráfico:', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-
               Expanded(
                 child: Card(
                   elevation: 2,
@@ -132,17 +124,31 @@ class ReportPage extends StatelessWidget {
                     child: BarChart(
                       BarChartData(
                         barGroups: [
-                          BarChartGroupData(x: 0, barRods: [
-                            BarChartRodData(toY: record.fatigueScore * 100),
-                          ]),
+                          BarChartGroupData(
+                            x: 0,
+                            barRods: [
+                              BarChartRodData(
+                                toY: record.fatigueScore * 100,
+                                width: 16,
+                              ),
+                            ],
+                          ),
                         ],
                         titlesData: FlTitlesData(
-                          leftTitles:  AxisTitles(sideTitles: SideTitles(showTitles: true)),
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: true),
+                          ),
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (_, __) => const Text('Fatiga %', style: TextStyle(fontSize: 12)),
                             ),
+                          ),
+                          rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
+                          ),
+                          topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false),
                           ),
                         ),
                         borderData: FlBorderData(show: false),
@@ -151,7 +157,6 @@ class ReportPage extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(height: 20),
               Center(
                 child: CustomButton(
@@ -160,21 +165,21 @@ class ReportPage extends StatelessWidget {
                   onPressed: () async {
                     try {
                       await Databases(client).createDocument(
-                        databaseId:   AppwriteConstants.databaseId,
+                        databaseId: AppwriteConstants.databaseId,
                         collectionId: AppwriteConstants.reportsCollectionId,
-                        documentId:   ID.unique(),
-                        data:         record.toCreateMap(),
+                        documentId: ID.unique(),
+                        data: record.toCreateMap(),
                       );
 
                       final histDoc = await HistoryRepository().saveToHistory(
-                        userId:         record.userId,
-                        status:         record.status,
-                        date:           dateStr,
-                        observations:   record.observations,
+                        userId: record.userId,
+                        status: record.status,
+                        date: dateStr,
+                        observations: record.observations,
                         eyeProbability: record.eyeProbability,
-                        yawnDetected:   record.yawnDetected,
-                        headTilt:       record.headTilt,
-                        fatigueScore:   record.fatigueScore,
+                        yawnDetected: record.yawnDetected,
+                        headTilt: record.headTilt,
+                        fatigueScore: record.fatigueScore,
                       );
 
                       final newMap = {
