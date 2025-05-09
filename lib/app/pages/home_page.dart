@@ -1,11 +1,12 @@
 import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
-import 'package:fatigue_control/app/widgets/custom_background.dart';
-import 'package:fatigue_control/app/widgets/shimmer_loading.dart';
-import 'package:fatigue_control/app/widgets/status_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../widgets/shared_widgets/custom_background.dart';
+import '../widgets/shared_widgets/shimmer_loading.dart';
+import '../widgets/shared_widgets/status_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

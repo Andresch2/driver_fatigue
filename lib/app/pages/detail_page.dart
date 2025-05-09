@@ -1,10 +1,12 @@
-import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/detail_widgets/detail_chart.dart';
 import 'package:fatigue_control/app/widgets/detail_widgets/fatigue_indicator_row.dart';
 import 'package:fatigue_control/app/widgets/detail_widgets/observations_box.dart';
 import 'package:fatigue_control/app/widgets/detail_widgets/status_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../widgets/shared_widgets/custom_background.dart';
+
 
 class DetailPage extends StatelessWidget {
   const DetailPage({super.key});

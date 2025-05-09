@@ -10,12 +10,12 @@ class HistoryRepository {
   final Databases _db  = Databases(client);
   final Box<AnalysisRecord> _box = Hive.box<AnalysisRecord>('history');
 
-  /// Sincroniza con Appwrite y devuelve lo que haya en Hive
   Future<List<AnalysisRecord>> getHistory(String userId) async {
     try {
       await _refreshRemote(userId);
     } catch (e) {
-      // Manejo de error si no se sincroniza
+      print('Error al refrescar el historial: $e');
+      return [];
     }
 
     final local = _box.values
@@ -25,7 +25,6 @@ class HistoryRepository {
     return local;
   }
 
-  /// Trae documentos de Appwrite y repuebla Hive sin parpadeos
   Future<void> _refreshRemote(String userId) async {
     final models.DocumentList remote = await _db.listDocuments(
       databaseId:   AppwriteConstants.databaseId,
@@ -36,7 +35,6 @@ class HistoryRepository {
       ],
     );
 
-    // Buffer temporal
     final List<AnalysisRecord> temp = remote.documents.map((doc) {
       return AnalysisRecord.fromMap({
         ...doc.data,
@@ -44,14 +42,12 @@ class HistoryRepository {
       });
     }).toList();
 
-    // Reemplaza todo en Hive de una vez
     await _box.clear();
     for (final record in temp) {
       await _box.put(record.id, record);
     }
   }
 
-  /// Crea un documento en Appwrite
   Future<models.Document> saveToHistory({
     required String userId,
     required String status,
@@ -79,7 +75,6 @@ class HistoryRepository {
     );
   }
 
-  /// Elimina un análisis de Appwrite e Hive
   Future<void> deleteFromHistory({ required String documentId }) async {
     await _db.deleteDocument(
       databaseId:   AppwriteConstants.databaseId,

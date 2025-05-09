@@ -5,11 +5,12 @@ import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/utils/validators.dart';
-import 'package:fatigue_control/app/widgets/custom_background.dart';
-import 'package:fatigue_control/app/widgets/custom_button.dart';
-import 'package:fatigue_control/app/widgets/custom_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../widgets/shared_widgets/custom_background.dart';
+import '../widgets/shared_widgets/custom_button.dart';
+import '../widgets/shared_widgets/custom_text_field.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
@@ -101,9 +102,9 @@ class RegisterPage extends StatelessWidget {
   }
 
   Future<void> _handleRegister() async {
-    final name  = _nameCtrl .text.trim();
+    final name  = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
-    final pass  = _passCtrl .text.trim();
+    final pass  = _passCtrl.text.trim();
 
     if (name.isEmpty || email.isEmpty || pass.isEmpty) {
       Get.snackbar('Error', 'Completa todos los campos',
@@ -131,7 +132,6 @@ class RegisterPage extends StatelessWidget {
         userId: me.$id,
         name: name,
         email: email,
-        password: pass,
       );
     } catch (e) {
       Get.snackbar('Error', 'No se pudo guardar perfil: $e',

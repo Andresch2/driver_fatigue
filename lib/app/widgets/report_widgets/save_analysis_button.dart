@@ -5,10 +5,11 @@ import 'package:fatigue_control/app/data/models/analysis_record.dart';
 import 'package:fatigue_control/app/data/repositories/history_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
-import 'package:fatigue_control/app/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+
+import '../shared_widgets/custom_button.dart';
 
 
 class SaveAnalysisButton extends StatelessWidget {

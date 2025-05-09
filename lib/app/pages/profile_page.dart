@@ -4,12 +4,14 @@ import 'package:fatigue_control/app/controllers/auth_controller.dart';
 import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
-import 'package:fatigue_control/app/widgets/custom_background.dart';
-import 'package:fatigue_control/app/widgets/custom_button.dart';
-import 'package:fatigue_control/app/widgets/user_info_card.dart';
+import 'package:fatigue_control/app/widgets/shared_widgets/user_info_card.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../widgets/shared_widgets/custom_background.dart';
+import '../widgets/shared_widgets/custom_button.dart';
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});

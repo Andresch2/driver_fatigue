@@ -5,7 +5,7 @@ import 'package:vibration/vibration.dart';
 
 import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
-import '../widgets/custom_button.dart';
+import '../widgets/shared_widgets/custom_button.dart';
 
 class AlertPage extends StatefulWidget {
   const AlertPage({super.key});

@@ -10,18 +10,16 @@ class UserRepository {
     required String userId,
     required String name,
     required String email,
-    required String password,
   }) async {
     try {
       await databases.createDocument(
-        databaseId:   AppwriteConstants.databaseId,
+        databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
-        documentId:   userId,
+        documentId: userId,
         data: {
-          'userId'  : userId,
-          'name'    : name,
-          'email'   : email,
-          'password': password,
+          'userId': userId,
+          'name': name,
+          'email': email,
         },
       );
     } catch (e) {
@@ -33,9 +31,9 @@ class UserRepository {
   Future<Document?> getUserByEmail(String email) async {
     try {
       final result = await databases.listDocuments(
-        databaseId:   AppwriteConstants.databaseId,
+        databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
-        queries: [ Query.equal('email', email) ],
+        queries: [Query.equal('email', email)],
       );
       return result.documents.isNotEmpty ? result.documents.first : null;
     } catch (e) {
@@ -47,9 +45,9 @@ class UserRepository {
   Future<Document?> getUserById(String userId) async {
     try {
       return await databases.getDocument(
-        databaseId:   AppwriteConstants.databaseId,
+        databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
-        documentId:   userId,
+        documentId: userId,
       );
     } catch (e) {
       print('Error al obtener usuario por ID: $e');
@@ -60,10 +58,10 @@ class UserRepository {
   Future<void> updateUserName(String userId, String newName) async {
     try {
       await databases.updateDocument(
-        databaseId:   AppwriteConstants.databaseId,
+        databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
-        documentId:   userId,
-        data: { 'name': newName },
+        documentId: userId,
+        data: {'name': newName},
       );
     } catch (e) {
       print('Error al actualizar nombre de usuario: $e');
@@ -74,10 +72,10 @@ class UserRepository {
   Future<void> updateUserProfilePicture(String userId, String fileUrl) async {
     try {
       await databases.updateDocument(
-        databaseId:   AppwriteConstants.databaseId,
+        databaseId: AppwriteConstants.databaseId,
         collectionId: AppwriteConstants.usersCollectionId,
-        documentId:   userId,
-        data: { 'profilePicture': fileUrl },
+        documentId: userId,
+        data: {'profilePicture': fileUrl},
       );
     } catch (e) {
       print('Error al actualizar la foto de perfil: $e');

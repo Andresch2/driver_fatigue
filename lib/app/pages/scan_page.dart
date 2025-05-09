@@ -8,8 +8,8 @@ import '../controllers/user_controller.dart';
 import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
 import '../services/ia_service.dart';
-import '../widgets/custom_background.dart';
-import '../widgets/custom_button.dart';
+import '../widgets/shared_widgets/custom_background.dart';
+import '../widgets/shared_widgets/custom_button.dart';
 
 class ScanPage extends StatefulWidget {
   const ScanPage({super.key});

@@ -1,4 +1,3 @@
-import 'package:fatigue_control/app/widgets/custom_background.dart';
 import 'package:fatigue_control/app/widgets/report_widgets/report_chart.dart';
 import 'package:fatigue_control/app/widgets/report_widgets/report_indicators.dart';
 import 'package:fatigue_control/app/widgets/report_widgets/report_observations.dart';
@@ -8,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../data/models/analysis_record.dart';
+import '../widgets/shared_widgets/custom_background.dart';
+
 
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
