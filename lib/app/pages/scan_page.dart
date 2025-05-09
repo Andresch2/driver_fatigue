@@ -17,17 +17,22 @@ class ScanPage extends StatefulWidget {
   State<ScanPage> createState() => _ScanPageState();
 }
 
-class _ScanPageState extends State<ScanPage> {
+class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin {
   late CameraController _cameraController;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
   int _countdown = 0;
   final IaService _iaService = IaService();
+  late AnimationController _ringController;
 
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    _ringController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    );
   }
 
   Future<void> _initializeCamera() async {
@@ -39,7 +44,7 @@ class _ScanPageState extends State<ScanPage> {
       );
       _cameraController = CameraController(
         frontCam,
-        ResolutionPreset.medium,
+        ResolutionPreset.high,
         enableAudio: false,
       );
       await _cameraController.initialize();
@@ -54,6 +59,7 @@ class _ScanPageState extends State<ScanPage> {
   void dispose() {
     _iaService.dispose();
     _cameraController.dispose();
+    _ringController.dispose();
     super.dispose();
   }
 
@@ -63,6 +69,7 @@ class _ScanPageState extends State<ScanPage> {
       _isProcessing = true;
       _countdown = 5;
     });
+    _ringController.forward(from: 0);
 
     while (_countdown > 0) {
       await Future.delayed(const Duration(seconds: 1));
@@ -71,22 +78,22 @@ class _ScanPageState extends State<ScanPage> {
     }
 
     try {
-      final picture    = await _cameraController.takePicture();
+      final picture = await _cameraController.takePicture();
       final inputImage = InputImage.fromFilePath(picture.path);
-      final resultado  = await _iaService.analizarFatiga(inputImage);
+      final resultado = await _iaService.analizarFatiga(inputImage);
 
-      final now    = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+      final now = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
       final userId = Get.find<UserController>().userId.value;
       final record = AnalysisRecord(
-        id:             DateTime.now().millisecondsSinceEpoch.toString(),
-        userId:         userId,
-        status:         resultado['estado']?.toString() ?? 'No Detectado',
-        date:           now,
-        observations:   resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
-        eyeProbability: (resultado['probabilidad_ojos']    as num?)?.toDouble() ?? 1.0,
-        yawnDetected:   (resultado['bostezo_detectado']    as bool?)   ?? false,
-        headTilt:       (resultado['inclinacion_cabeza']  as num?)?.toDouble() ?? 0.0,
-        fatigueScore:   (resultado['score_fatiga']        as num?)?.toDouble() ?? 0.0,
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        userId: userId,
+        status: resultado['estado']?.toString() ?? 'No Detectado',
+        date: now,
+        observations: resultado['observaciones']?.toString() ?? 'No se detectó rostro.',
+        eyeProbability: (resultado['probabilidad_ojos'] as num?)?.toDouble() ?? 1.0,
+        yawnDetected: (resultado['bostezo_detectado'] as bool?) ?? false,
+        headTilt: (resultado['inclinacion_cabeza'] as num?)?.toDouble() ?? 0.0,
+        fatigueScore: (resultado['score_fatiga'] as num?)?.toDouble() ?? 0.0,
       );
 
       if (resultado['fatigado'] == true) {
@@ -100,7 +107,7 @@ class _ScanPageState extends State<ScanPage> {
       if (mounted) {
         setState(() {
           _isProcessing = false;
-          _countdown    = 0;
+          _countdown = 0;
         });
       }
     }
@@ -109,30 +116,80 @@ class _ScanPageState extends State<ScanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Escaneo Facial')),
+      appBar: AppBar(
+        title: const Text('Escaneo Facial'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+      ),
+      extendBodyBehindAppBar: true,
       body: CustomBackground(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 80),
           child: _isCameraInitialized
               ? Column(
                   children: [
-                    AspectRatio(
-                      aspectRatio: _cameraController.value.aspectRatio,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: CameraPreview(_cameraController),
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: CameraPreview(_cameraController),
+                          ),
+                          if (!_isProcessing)
+                            Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white54,
+                                  width: 3,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.face_retouching_natural,
+                                  size: 50,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                          if (_isProcessing)
+                            SizedBox(
+                              width: 220,
+                              height: 220,
+                              child: AnimatedBuilder(
+                                animation: _ringController,
+                                builder: (context, child) {
+                                  return CircularProgressIndicator(
+                                    value: _ringController.value,
+                                    strokeWidth: 8,
+                                    backgroundColor: Colors.white24,
+                                  );
+                                },
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     if (_isProcessing && _countdown > 0)
-                      Text('Escaneando en: $_countdown s', style: const TextStyle(fontSize: 18)),
-                    const SizedBox(height: 10),
+                      Text(
+                        'Escaneando en: $_countdown s',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(color: Colors.white),
+                      ),
+                    const SizedBox(height: 20),
                     CustomButton(
-                      text:            'Analizar con IA',
-                      icon:            Icons.face_retouching_natural,
-                      isLoading:       _isProcessing,
-                      backgroundColor: Theme.of(context).primaryColor,
-                      onPressed:       _analyzeFace,
+                      text: 'Analizar con IA',
+                      icon: Icons.analytics,
+                      isLoading: _isProcessing,
+                      backgroundColor: Colors.deepPurpleAccent,
+                      onPressed: _analyzeFace,
                     ),
                   ],
                 )
