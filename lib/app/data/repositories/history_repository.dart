@@ -14,8 +14,8 @@ class HistoryRepository {
     try {
       await _refreshRemote(userId);
     } catch (e) {
-      print('Error al refrescar el historial: $e');
-      return [];
+      // ignore: avoid_print
+      print('Error al refrescar el historial (offline?): $e');
     }
 
     final local = _box.values

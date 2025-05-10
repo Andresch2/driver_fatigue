@@ -8,6 +8,7 @@ import 'app/controllers/analysis_controller.dart';
 import 'app/controllers/auth_controller.dart';
 import 'app/controllers/user_controller.dart';
 import 'app/data/models/analysis_record.dart';
+import 'app/data/models/user_model.dart';
 import 'app/data/repositories/auth_repository.dart';
 import 'app/data/repositories/history_repository.dart';
 import 'app/data/repositories/user_repository.dart';
@@ -19,11 +20,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Hive.initFlutter();
+
   Hive.registerAdapter(AnalysisRecordAdapter());
+  Hive.registerAdapter(UserModelAdapter());
   await Hive.openBox<AnalysisRecord>('history');
+  await Hive.openBox<UserModel>('userBox');
 
   await GetStorage.init();
-
   await Firebase.initializeApp();
   await PushService.init();
 

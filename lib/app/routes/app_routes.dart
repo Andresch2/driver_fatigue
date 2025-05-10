@@ -8,4 +8,5 @@ abstract class AppRoutes {
   static const detail = '/detail';
   static const alert = '/alert';
   static const splash = '/';
+  static const tips = '/tips';
 }

@@ -5,7 +5,7 @@ import 'package:vibration/vibration.dart';
 
 import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
-import '../widgets/shared_widgets/custom_button.dart';
+import '../widgets/alert_widgets/alert_content.dart';
 
 class AlertPage extends StatefulWidget {
   const AlertPage({super.key});
@@ -80,43 +80,9 @@ class _AlertPageState extends State<AlertPage> {
         backgroundColor: Colors.red.shade900,
         automaticallyImplyLeading: false,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.warning_amber_rounded, size: 100, color: Colors.white),
-              const SizedBox(height: 20),
-              Text(
-                record.status,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Score de Fatiga: ${(record.fatigueScore * 100).toStringAsFixed(1)}%',
-                style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'Por favor tome un descanso.\nPulse el botón si está consciente.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontSize: 18),
-              ),
-              const SizedBox(height: 30),
-              CustomButton(
-                text: "Estoy despierto",
-                icon: Icons.check_circle_outline,
-                onPressed: _stopAlert,
-                backgroundColor: Colors.white,
-                textColor: Colors.red.shade900,
-                width: 220,
-                isLoading: false,
-              ),
-            ],
-          ),
-        ),
+      body: AlertContent(
+        record: record,
+        onStop: _stopAlert,
       ),
     );
   }

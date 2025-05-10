@@ -7,6 +7,7 @@ import 'package:fatigue_control/app/pages/register_page.dart';
 import 'package:fatigue_control/app/pages/report_page.dart';
 import 'package:fatigue_control/app/pages/scan_page.dart';
 import 'package:fatigue_control/app/pages/splash_page.dart';
+import 'package:fatigue_control/app/pages/tips_page.dart';
 import 'package:get/get.dart';
 
 import '../routes/app_routes.dart';
@@ -22,5 +23,6 @@ class AppPages {
     GetPage(name: AppRoutes.detail, page: () => DetailPage()),
     GetPage(name: AppRoutes.alert, page: () => AlertPage()),
     GetPage(name: AppRoutes.splash, page: () => SplashPage()),
+    GetPage(name: AppRoutes.tips, page: () => TipsPage()),
   ];
 }

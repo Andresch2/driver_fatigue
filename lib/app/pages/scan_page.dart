@@ -8,6 +8,7 @@ import '../controllers/user_controller.dart';
 import '../data/models/analysis_record.dart';
 import '../routes/app_routes.dart';
 import '../services/ia_service.dart';
+import '../widgets/scan_widgets/face_camera_view.dart';
 import '../widgets/shared_widgets/custom_background.dart';
 import '../widgets/shared_widgets/custom_button.dart';
 
@@ -130,48 +131,10 @@ class _ScanPageState extends State<ScanPage> with SingleTickerProviderStateMixin
               ? Column(
                   children: [
                     Expanded(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: CameraPreview(_cameraController),
-                          ),
-                          if (!_isProcessing)
-                            Container(
-                              width: 200,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white54,
-                                  width: 3,
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.face_retouching_natural,
-                                  size: 50,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ),
-                          if (_isProcessing)
-                            SizedBox(
-                              width: 220,
-                              height: 220,
-                              child: AnimatedBuilder(
-                                animation: _ringController,
-                                builder: (context, child) {
-                                  return CircularProgressIndicator(
-                                    value: _ringController.value,
-                                    strokeWidth: 8,
-                                    backgroundColor: Colors.white24,
-                                  );
-                                },
-                              ),
-                            ),
-                        ],
+                      child: FaceCameraView(
+                        cameraController: _cameraController,
+                        isProcessing: _isProcessing,
+                        ringController: _ringController,
                       ),
                     ),
                     const SizedBox(height: 30),

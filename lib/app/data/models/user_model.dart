@@ -1,8 +1,22 @@
-class UserModel {
+import 'package:hive/hive.dart';
+
+part 'user_model.g.dart';
+
+@HiveType(typeId: 1)
+class UserModel extends HiveObject {
+  @HiveField(0)
   final String id;
+
+  @HiveField(1)
   final String name;
+
+  @HiveField(2)
   final String email;
+
+  @HiveField(3)
   final String? password;
+
+  @HiveField(4)
   final String? profilePicture;
 
   UserModel({
@@ -15,7 +29,7 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['\$id'] as String,
+      id: map[r'$id'] as String? ?? map['id'] as String? ?? '',
       name: map['name'] as String? ?? '',
       email: map['email'] as String? ?? '',
       password: map['password'] as String?,

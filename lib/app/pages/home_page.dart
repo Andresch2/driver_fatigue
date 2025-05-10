@@ -19,19 +19,21 @@ class _HomePageState extends State<HomePage> {
   final AnalysisController ac = Get.find<AnalysisController>();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Historial de Análisis'),
         actions: [
+
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => Get.toNamed(AppRoutes.profile),
+          ),
+
+          IconButton(
+            icon: const Icon(Icons.lightbulb_outline),
+            tooltip: 'Tips de Descanso',
+            onPressed: () => Get.toNamed(AppRoutes.tips),
           ),
         ],
       ),
