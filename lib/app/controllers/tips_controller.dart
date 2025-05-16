@@ -1,80 +1,66 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 
 import '../data/models/tip.dart';
 
 class TipsController extends GetxController {
-  final _box = GetStorage();
-
-  final Duration reappearAfter = const Duration(minutes: 5);
-
-  RxMap<String, int> marcados = <String, int>{}.obs;
-
-  final List<Tip> allTips = [
-    Tip(id: 'cuello',  text: 'Estira el cuello cada 2 h', icon: Icons.accessibility_new),
-    Tip(id: 'agua',    text: 'Toma un vaso de agua', icon: Icons.local_drink),
-    Tip(id: 'vista',   text: 'Mira a lo lejos durante 20 s', icon: Icons.remove_red_eye),
-    Tip(id: 'postura', text: 'Corrige tu postura', icon: Icons.chair),
-    Tip(id: 'caminar', text: 'Camina 5 min cada hora', icon: Icons.directions_walk),
-  ];
+  final RxList<Tip> tipsVisibles = <Tip>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-
-    final dynamic raw = _box.read('tips_marcados');
-    if (raw is Map) {
-      raw.forEach((key, value) {
-        final k = key.toString();
-        final v = value is int
-            ? value
-            : int.tryParse(value.toString()) ?? 0;
-        if (v > 0) {
-          marcados[k] = v;
-        }
-      });
-    }
-
-    _purgeExpired();
-  }
-
-  void marcarComoLeido(String id) {
-    marcados[id] = DateTime.now().millisecondsSinceEpoch;
-    _save();
-  }
-
-  void noMeInteresa(String id) {
-    marcados[id] = DateTime.now().millisecondsSinceEpoch;
-    _save();
-  }
-
-  void _save() {
-    _box.write('tips_marcados', marcados);
-  }
-
-  void _purgeExpired() {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final expired = marcados.entries
-        .where((e) => e.value + reappearAfter.inMilliseconds < now)
-        .map((e) => e.key)
-        .toList();
-
-    if (expired.isNotEmpty) {
-      for (var id in expired) {
-        marcados.remove(id);
-      }
-      _save();
-    }
-  }
-
-  List<Tip> get tipsVisibles {
-    _purgeExpired();
-    return allTips.where((t) => !marcados.containsKey(t.id)).toList();
-  }
-
-  void resetTips() {
-    marcados.clear();
-    _save();
+    tipsVisibles.assignAll([
+      Tip(
+        id: 'concentracion',
+        title: 'Pérdida de concentración',
+        text: 'En un episodio de este tipo, la pérdida de concentración es una de las señas más '
+            'reconocibles, la cual puede ir acompañada de otros elementos como picor de ojos, '
+            'visión borrosa o parpadeo continuado. Todos estos aspectos dan como resultado que '
+            'el conductor presente incomodidad y, por ello, necesite estar acomodándose '
+            'constantemente en el asiento.',
+        imagePath: 'assets/images/concentracion.png',
+      ),
+      Tip(
+        id: 'deshidratacion',
+        title: 'Deshidratación',
+        text: 'La deshidratación es, por su parte, otro de los síntomas asociados a la fatiga '
+            'y somnolencia.',
+        imagePath: 'assets/images/deshidratacion.png',
+      ),
+      Tip(
+        id: 'paradas',
+        title: 'Para cada 2 horas',
+        text: 'En largos recorridos es vital que, al menos, efectúes paradas cada 2 horas o al '
+            'menor síntoma de cansancio. Procura que cada parada dure, como mínimo, 15 minutos.',
+        imagePath: 'assets/images/paradas.png',
+      ),
+      Tip(
+        id: 'agua',
+        title: 'Bebe agua o refresco',
+        text: 'En carretera, la hidratación es fundamental, sobre todo en verano. Ten siempre a '
+            'mano un refresco y bebe con frecuencia aunque no sientas sed.',
+        imagePath: 'assets/images/agua.png',
+      ),
+      Tip(
+        id: 'estiramientos',
+        title: 'Realiza estiramientos',
+        text: 'Cada vez que te bajes del coche, realiza ejercicios de estiramiento de articulaciones.',
+        imagePath: 'assets/images/estiramientos.png',
+      ),
+      Tip(
+        id: 'comidas',
+        title: 'Evita comidas abundantes',
+        text: 'Existen alimentos para combatir el cansancio, sobre todo aquellos que son ricos en '
+            'fibra y minerales como el aguacate o el plátano. También hay otros como el cacao, '
+            'que tienen propiedades estimulantes.',
+        imagePath: 'assets/images/comidas.png',
+      ),
+      Tip(
+        id: 'cierre',
+        title: 'Consejo final',
+        text: 'Saber cómo combatir el cansancio te ayudará a sentirte mejor mientras conduces, '
+            'y esto facilitará que puedas llegar a tu destino sin ningún sobresalto.',
+        imagePath: 'assets/images/agua.png',
+      ),
+    ]);
   }
 }

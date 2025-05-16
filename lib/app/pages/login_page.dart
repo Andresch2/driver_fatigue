@@ -5,10 +5,10 @@ import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:fatigue_control/app/utils/validators.dart';
+import 'package:fatigue_control/app/widgets/backgrounds/auth_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../widgets/shared_widgets/custom_background.dart';
 import '../widgets/shared_widgets/custom_button.dart';
 import '../widgets/shared_widgets/custom_text_field.dart';
 
@@ -25,7 +25,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomBackground(
+      body: AuthBackground(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: SafeArea(

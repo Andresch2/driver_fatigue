@@ -26,6 +26,10 @@ class AnalysisController extends GetxController {
     userId.value = id;
   }
 
+  Future<void> loadHistory() async {
+    await _loadHistory();
+  }
+
   Future<void> _loadHistory() async {
     if (userId.value.isEmpty) return;
     final List<AnalysisRecord> data =

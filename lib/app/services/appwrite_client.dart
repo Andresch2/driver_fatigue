@@ -4,4 +4,5 @@ import '../constants/constants.dart';
 
 final Client client = Client()
   ..setEndpoint(AppwriteConstants.endpoint)
-  ..setProject(AppwriteConstants.projectId);
+  ..setProject(AppwriteConstants.projectId)
+  ..setSelfSigned(status: true);

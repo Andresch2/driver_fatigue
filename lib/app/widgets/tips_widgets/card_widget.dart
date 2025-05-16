@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
 class CardWidget extends StatelessWidget {
-  final IconData icon;
+  final String imagePath;
   final String text;
-  final VoidCallback onMarkRead;
-  final VoidCallback onSkip;
+  final String? title;
 
   const CardWidget({
     super.key,
-    required this.icon,
+    required this.imagePath,
     required this.text,
-    required this.onMarkRead,
-    required this.onSkip,
+    this.title,
   });
 
   @override
@@ -22,28 +20,34 @@ class CardWidget extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 32),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                style: Theme.of(context).textTheme.titleMedium,
+            if (title != null && title!.isNotEmpty)
+              Text(
+                title!,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
               ),
-            ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert),
-              onSelected: (opt) {
-                if (opt == 'leido') {
-                  onMarkRead();
-                } else {
-                  onSkip();
-                }
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'leido', child: Text('Marcar como leído')),
-                PopupMenuItem(value: 'no',    child: Text('No me interesa')),
+            if (title != null && title!.isNotEmpty)
+              const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset(
+                  imagePath,
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    text ?? '',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
               ],
             ),
           ],

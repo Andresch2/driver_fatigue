@@ -1,7 +1,8 @@
+import 'package:fatigue_control/app/controllers/tips_controller.dart';
+import 'package:fatigue_control/app/widgets/backgrounds/tips_background.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/tips_controller.dart';
 import '../widgets/tips_widgets/card_widget.dart';
 import '../widgets/tips_widgets/empty_widget.dart';
 import '../widgets/tips_widgets/header_widget.dart';
@@ -14,32 +15,41 @@ class TipsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tips de Descanso')),
-      body: Obx(() {
-        final tips = ctrl.tipsVisibles;
-        return Column(
+      appBar: AppBar(
+        title: const Text(
+          'Tips',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: TipsBackground(
+        child: Column(
           children: [
-            const HeaderWidget(),
+            const HeaderWidget(title: 'Como combatir la fatiga'),
             Expanded(
-              child: tips.isEmpty
-                  ? const EmptyWidget()
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: tips.length,
-                      itemBuilder: (_, i) {
-                        final tip = tips[i];
-                        return CardWidget(
-                          icon: tip.icon,
-                          text: tip.text,
-                          onMarkRead: () => ctrl.marcarComoLeido(tip.id),
-                          onSkip:      () => ctrl.noMeInteresa(tip.id),
-                        );
-                      },
-                    ),
+              child: Obx(() {
+                if (ctrl.tipsVisibles.isEmpty) {
+                  return const EmptyWidget();
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: ctrl.tipsVisibles.length,
+                  itemBuilder: (_, i) {
+                    final tip = ctrl.tipsVisibles[i];
+                    if (tip.title == "Consejo final") {
+                      return const SizedBox.shrink();
+                    }
+                    return CardWidget(
+                      imagePath: tip.imagePath,
+                      text: tip.text,
+                      title: tip.title,
+                    );
+                  },
+                );
+              }),
             ),
           ],
-        );
-      }),
+        ),
+      ),
     );
   }
 }

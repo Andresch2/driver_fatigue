@@ -4,9 +4,9 @@ import 'package:fatigue_control/app/controllers/auth_controller.dart';
 import 'package:fatigue_control/app/controllers/user_controller.dart';
 import 'package:fatigue_control/app/data/repositories/user_repository.dart';
 import 'package:fatigue_control/app/services/appwrite_client.dart';
+import 'package:fatigue_control/app/widgets/backgrounds/profile_background.dart';
 import 'package:fatigue_control/app/widgets/profile_widgets/profile_buttons.dart';
 import 'package:fatigue_control/app/widgets/profile_widgets/user_info_card.dart';
-import 'package:fatigue_control/app/widgets/shared_widgets/custom_background.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -72,13 +72,13 @@ class _ProfilePageState extends State<ProfilePage> {
         '?project=${AppwriteConstants.projectId}';
 
       await _repo.updateUserProfilePicture(_userC.userId.value, url);
-
       await _userC.cargarPerfil();
       await _loadUserProfile();
 
       Get.snackbar('Éxito', 'Foto de perfil actualizada');
     } catch (e) {
       Get.snackbar('Error', 'No se pudo subir imagen: $e');
+    } finally {
       setState(() => isLoading = false);
     }
   }
@@ -104,13 +104,13 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => isLoading = true);
     try {
       await _repo.updateUserName(_userC.userId.value, newName);
-
       await _userC.cargarPerfil();
       await _loadUserProfile();
 
       Get.snackbar('Éxito', 'Nombre actualizado');
     } catch (e) {
       Get.snackbar('Error', 'No se pudo actualizar nombre: $e');
+    } finally {
       setState(() => isLoading = false);
     }
   }
@@ -134,9 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi Perfil')),
-      body: CustomBackground(
-        showIcons:   true,
-        iconOpacity: 0.07,
+      body: ProfileBackground(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: ListView(

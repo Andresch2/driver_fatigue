@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import '../data/models/analysis_record.dart';
 import '../widgets/shared_widgets/custom_background.dart';
 
-
 class ReportPage extends StatelessWidget {
   const ReportPage({super.key});
 
@@ -31,43 +30,48 @@ class ReportPage extends StatelessWidget {
       body: CustomBackground(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      ReportStatus(
-                        status: record.status,
-                        fatigueScore: record.fatigueScore,
-                      ),
-                      const SizedBox(height: 10),
-                      const Divider(),
-                      const SizedBox(height: 10),
-                      ReportIndicators(
-                        eyeProbability: record.eyeProbability,
-                        headTilt: record.headTilt,
-                        yawnDetected: record.yawnDetected,
-                      ),
-                      const SizedBox(height: 10),
-                      const Divider(),
-                      const SizedBox(height: 10),
-                      ReportObservations(observations: record.observations),
-                    ],
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        ReportStatus(
+                          status: record.status,
+                          fatigueScore: record.fatigueScore,
+                        ),
+                        const SizedBox(height: 10),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        ReportIndicators(
+                          eyeProbability: record.eyeProbability,
+                          headTilt: record.headTilt,
+                          yawnDetected: record.yawnDetected,
+                        ),
+                        const SizedBox(height: 10),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        ReportObservations(observations: record.observations),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              const Text('Gráfico:', style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              Expanded(child: ReportChart(fatigueScore: record.fatigueScore)),
-              const SizedBox(height: 20),
-              SaveAnalysisButton(record: record),
-            ],
+                const SizedBox(height: 20),
+                const Text('Gráfico:', style: TextStyle(fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 300,
+                  child: ReportChart(fatigueScore: record.fatigueScore),
+                ),
+                const SizedBox(height: 20),
+                SaveAnalysisButton(record: record),
+              ],
+            ),
           ),
         ),
       ),
