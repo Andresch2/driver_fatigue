@@ -13,11 +13,8 @@ class HistoryRepository {
   Future<List<AnalysisRecord>> getHistory(String userId) async {
     try {
       await _refreshRemote(userId);
-    } catch (e) {
-      // ignore: avoid_print
-      print('Error al refrescar el historial (offline?): $e');
+    } catch (_) {
     }
-
     final local = _box.values
       .where((r) => r.userId == userId)
       .toList()
@@ -48,39 +45,61 @@ class HistoryRepository {
     }
   }
 
-  Future<models.Document> saveToHistory({
-    required String userId,
-    required String status,
-    required String date,
-    required String observations,
-    double? eyeProbability,
-    bool? yawnDetected,
-    double? headTilt,
-    double? fatigueScore,
-  }) async {
-    return await _db.createDocument(
-      databaseId:   AppwriteConstants.databaseId,
-      collectionId: AppwriteConstants.historyCollectionId,
-      documentId:   ID.unique(),
-      data: {
-        'user_id':         userId,
-        'status':          status,
-        'date':            date,
-        'observations':    observations,
-        'eye_probability': eyeProbability  ?? 1.0,
-        'yawn_detected':   yawnDetected    ?? false,
-        'head_tilt':       headTilt        ?? 0.0,
-        'fatigue_score':   fatigueScore    ?? 0.0,
-      },
-    );
+  Future<void> saveAnalysisOfflineFirst(AnalysisRecord record) async {
+    if (record.id.isEmpty) {
+      record.id = DateTime.now().millisecondsSinceEpoch.toString();
+    }
+    record.synced = false;
+    await _box.put(record.id, record);
+
+    try {
+      final models.Document created = await _db.createDocument(
+        databaseId:   AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.historyCollectionId,
+        documentId:   ID.unique(),
+        data:         record.toCreateMap(),
+      );
+      final syncedRecord = record.copyWith(
+        id:      created.$id,
+        synced:  true,
+      );
+      await _box.delete(record.id);
+      await _box.put(syncedRecord.id, syncedRecord);
+    } catch (_) {
+    }
+  }
+
+  Future<void> syncPending() async {
+    final pending = _box.values.where((r) => !r.synced).toList();
+    for (final record in pending) {
+      try {
+        final models.Document created = await _db.createDocument(
+          databaseId:   AppwriteConstants.databaseId,
+          collectionId: AppwriteConstants.historyCollectionId,
+          documentId:   ID.unique(),
+          data:         record.toCreateMap(),
+        );
+        final updated = record.copyWith(
+          id:      created.$id,
+          synced:  true,
+        );
+        await _box.delete(record.id);
+        await _box.put(updated.id, updated);
+      } catch (e) {
+        print('Error sincronizando ${record.id}: $e');
+      }
+    }
   }
 
   Future<void> deleteFromHistory({ required String documentId }) async {
-    await _db.deleteDocument(
-      databaseId:   AppwriteConstants.databaseId,
-      collectionId: AppwriteConstants.historyCollectionId,
-      documentId:   documentId,
-    );
+    try {
+      await _db.deleteDocument(
+        databaseId:   AppwriteConstants.databaseId,
+        collectionId: AppwriteConstants.historyCollectionId,
+        documentId:   documentId,
+      );
+    } catch (_) {
+    }
     await _box.delete(documentId);
   }
 }

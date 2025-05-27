@@ -11,7 +11,6 @@ import 'package:intl/intl.dart';
 
 import '../shared_widgets/custom_button.dart';
 
-
 class SaveAnalysisButton extends StatelessWidget {
   final AnalysisRecord record;
 
@@ -28,39 +27,24 @@ class SaveAnalysisButton extends StatelessWidget {
         icon: Icons.save,
         onPressed: () async {
           final analysisController = Get.find<AnalysisController>();
+          final historyRepo = Get.find<HistoryRepository>();
           final dateStr = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+          final recordWithDate = record.copyWith(date: dateStr);
+          await historyRepo.saveAnalysisOfflineFirst(recordWithDate);
 
           try {
             await Databases(client).createDocument(
               databaseId: AppwriteConstants.databaseId,
               collectionId: AppwriteConstants.reportsCollectionId,
               documentId: ID.unique(),
-              data: record.toCreateMap(),
+              data: recordWithDate.toCreateMap(),
             );
-
-            final histDoc = await HistoryRepository().saveToHistory(
-              userId: record.userId,
-              status: record.status,
-              date: dateStr,
-              observations: record.observations,
-              eyeProbability: record.eyeProbability,
-              yawnDetected: record.yawnDetected,
-              headTilt: record.headTilt,
-              fatigueScore: record.fatigueScore,
-            );
-
-            final newMap = {
-              r'$id': histDoc.$id,
-              ...record.toCreateMap(),
-            };
-            final newRecord = AnalysisRecord.fromMap(newMap);
-            analysisController.agregarAnalisis(newRecord);
-
-            Get.snackbar('Guardado', 'Análisis guardado correctamente.');
-            Get.offAllNamed(AppRoutes.home);
-          } catch (e) {
-            Get.snackbar('Error', 'No se pudo guardar en Appwrite: $e');
+          } catch (_) {
           }
+
+          analysisController.agregarAnalisis(recordWithDate);
+          Get.snackbar('Guardado', 'Análisis guardado correctamente.');
+          Get.offAllNamed(AppRoutes.home);
         },
       ),
     );

@@ -17,7 +17,7 @@ class TipsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Tips',
+          'Consejos',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),

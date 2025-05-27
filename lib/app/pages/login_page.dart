@@ -12,10 +12,15 @@ import 'package:get/get.dart';
 import '../widgets/shared_widgets/custom_button.dart';
 import '../widgets/shared_widgets/custom_text_field.dart';
 
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
-  
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey   = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
 
@@ -32,46 +37,86 @@ class LoginPage extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-                Icon(Icons.shield_outlined, size: 80, color: Theme.of(context).primaryColor),
+                Icon(
+                  Icons.shield_outlined,
+                  size: 80,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(height: 16),
-                Text('Control de Fatiga',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)
+                Text(
+                  'Control de Fatiga',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text('Inicia sesión para continuar',
-                  style: TextStyle(fontSize: 16, color: Colors.grey.shade600)
+                Text(
+                  'Inicia sesión para continuar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
                 const SizedBox(height: 40),
 
                 Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        CustomTextField(
-                          controller: _emailCtrl,
-                          labelText: 'Correo electrónico',
-                          hintText: 'ejemplo@email.com',
-                          prefixIcon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: _passCtrl,
-                          labelText: 'Contraseña',
-                          prefixIcon: Icons.lock_outline,
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 24),
-                        Obx(() => CustomButton(
-                          text: 'Iniciar sesión',
-                          icon: Icons.login,
-                          isLoading: _authC.isLoading.value,
-                          onPressed: _handleLogin,
-                        )),
-                      ],
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          CustomTextField(
+                            controller: _emailCtrl,
+                            labelText: 'Correo electrónico',
+                            hintText: 'ejemplo@gmail.com',
+                            prefixIcon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            errorMaxLines: 2,
+                            validator: (value) {
+                              if (!Validators.isNotEmpty(value ?? '')) {
+                                return 'Por favor, rellena el correo';
+                              }
+                              if (!Validators.isValidEmail(value!)) {
+                                return 'Introduce un correo válido';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          CustomTextField(
+                            controller: _passCtrl,
+                            labelText: 'Contraseña',
+                            prefixIcon: Icons.lock_outline,
+                            obscureText: true,
+                            errorMaxLines: 2,
+                            validator: (value) {
+                              if (!Validators.isNotEmpty(value ?? '')) {
+                                return 'Por favor, rellena la contraseña';
+                              }
+                              if (!Validators.isValidPassword(value!)) {
+                                return 'Debe tener al menos 8 caracteres y una mayúscula';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => CustomButton(
+                              text: 'Iniciar sesión',
+                              icon: Icons.login,
+                              isLoading: _authC.isLoading.value,
+                              onPressed: _handleLogin,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -80,10 +125,16 @@ class LoginPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('¿No tienes cuenta?', style: TextStyle(color: Colors.grey.shade700)),
+                    Text(
+                      '¿No tienes cuenta?',
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
                     TextButton(
                       onPressed: () => Get.toNamed(AppRoutes.register),
-                      child: const Text('Regístrate', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Regístrate',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -96,32 +147,21 @@ class LoginPage extends StatelessWidget {
   }
 
   Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final email = _emailCtrl.text.trim();
     final pass  = _passCtrl.text.trim();
-    
-    if (email.isEmpty || pass.isEmpty) {
-      Get.snackbar('Error', 'Completa todos los campos',
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade800,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
-      return;
-    }
-    if (!Validators.isValidEmail(email)) {
-      Get.snackbar('Error', 'Correo inválido',
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade800,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
-      return;
-    }
 
     final success = await _authC.login(email: email, password: pass);
     if (!success) return;
 
     final User? me = _authC.user.value;
     if (me == null) {
-      Get.snackbar('Error', 'No se pudo obtener tu usuario',
+      Get.snackbar(
+        'Error',
+        'No se pudo obtener tu usuario',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );
@@ -129,7 +169,6 @@ class LoginPage extends StatelessWidget {
     }
 
     try {
-
       final Document? doc = await _userDb.getUserById(me.$id);
       if (doc != null) {
         final uc = Get.find<UserController>();
@@ -139,24 +178,39 @@ class LoginPage extends StatelessWidget {
           correo: doc.data['email'],
         );
       } else {
-        Get.snackbar('Aviso', 'Usuario sin perfil, continúa');
+        Get.snackbar(
+          'Aviso',
+          'Usuario sin perfil, continúa',
+          backgroundColor: Colors.orange.shade50,
+          colorText: Colors.orange.shade800,
+        );
       }
 
       final ac = Get.find<AnalysisController>();
       ac.setUserId(me.$id);
 
-      Get.snackbar('¡Bienvenido!', 'Has iniciado sesión con éxito',
+      Get.snackbar(
+        '¡Bienvenido!',
+        'Has iniciado sesión con éxito',
         backgroundColor: Colors.green.shade50,
         colorText: Colors.green.shade800,
         icon: const Icon(Icons.check_circle, color: Colors.green),
       );
       Get.offAllNamed(AppRoutes.home);
-
     } catch (e) {
-      Get.snackbar('Error', 'No se pudo cargar perfil: $e',
+      Get.snackbar(
+        'Error',
+        'No se pudo cargar perfil: $e',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 }

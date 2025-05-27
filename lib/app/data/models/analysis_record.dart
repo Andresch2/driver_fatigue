@@ -5,23 +5,34 @@ part 'analysis_record.g.dart';
 @HiveType(typeId: 0)
 class AnalysisRecord {
   @HiveField(0)
-  final String id;
+  String id;
+
   @HiveField(1)
   final String userId;
+
   @HiveField(2)
   final String status;
+
   @HiveField(3)
   final String date;
+
   @HiveField(4)
   final String observations;
+
   @HiveField(5)
   final double eyeProbability;
+
   @HiveField(6)
   final bool yawnDetected;
+
   @HiveField(7)
   final double headTilt;
+
   @HiveField(8)
   final double fatigueScore;
+
+  @HiveField(9)
+  bool synced;
 
   AnalysisRecord({
     required this.id,
@@ -33,6 +44,7 @@ class AnalysisRecord {
     required this.yawnDetected,
     required this.headTilt,
     required this.fatigueScore,
+    this.synced = false,
   });
 
   AnalysisRecord copyWith({
@@ -45,6 +57,7 @@ class AnalysisRecord {
     bool? yawnDetected,
     double? headTilt,
     double? fatigueScore,
+    bool? synced,
   }) {
     return AnalysisRecord(
       id:               id             ?? this.id,
@@ -56,6 +69,7 @@ class AnalysisRecord {
       yawnDetected:     yawnDetected   ?? this.yawnDetected,
       headTilt:         headTilt       ?? this.headTilt,
       fatigueScore:     fatigueScore   ?? this.fatigueScore,
+      synced:           synced         ?? this.synced,
     );
   }
 
@@ -87,6 +101,7 @@ class AnalysisRecord {
       yawnDetected:     (m['yawn_detected']   as bool?)             ?? false,
       headTilt:         (m['head_tilt']       as num?)?.toDouble() ?? 0.0,
       fatigueScore:     (m['fatigue_score']   as num?)?.toDouble() ?? 0.0,
+      synced:           true,
     );
   }
 }

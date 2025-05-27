@@ -26,13 +26,14 @@ class AnalysisRecordAdapter extends TypeAdapter<AnalysisRecord> {
       yawnDetected: fields[6] as bool,
       headTilt: fields[7] as double,
       fatigueScore: fields[8] as double,
+      synced: fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, AnalysisRecord obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class AnalysisRecordAdapter extends TypeAdapter<AnalysisRecord> {
       ..writeByte(7)
       ..write(obj.headTilt)
       ..writeByte(8)
-      ..write(obj.fatigueScore);
+      ..write(obj.fatigueScore)
+      ..writeByte(9)
+      ..write(obj.synced);
   }
 
   @override

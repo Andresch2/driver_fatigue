@@ -12,15 +12,21 @@ import 'package:get/get.dart';
 import '../widgets/shared_widgets/custom_button.dart';
 import '../widgets/shared_widgets/custom_text_field.dart';
 
-class RegisterPage extends StatelessWidget {
-  RegisterPage({super.key});
-  
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final _formKey   = GlobalKey<FormState>();
   final _nameCtrl  = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
 
-  final _authC   = Get.find<AuthController>();
-  final _userDb  = UserRepository();
+  final _authC  = Get.find<AuthController>();
+  final _userDb = UserRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -32,52 +38,103 @@ class RegisterPage extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 40),
-                Icon(Icons.shield_outlined, size: 80, color: Theme.of(context).primaryColor),
+                Icon(
+                  Icons.shield_outlined,
+                  size: 80,
+                  color: Theme.of(context).primaryColor,
+                ),
                 const SizedBox(height: 16),
-                Text('Control de Fatiga',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)
+                Text(
+                  'Control de Fatiga',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text('Crea una cuenta nueva', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                Text(
+                  'Crea una cuenta nueva',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
                 const SizedBox(height: 40),
 
                 Card(
                   elevation: 4,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Column(
-                      children: [
-                        CustomTextField(
-                          controller: _nameCtrl,
-                          labelText: 'Nombre completo',
-                          hintText: 'Juan Pérez',
-                          prefixIcon: Icons.person_outline,
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          controller: _emailCtrl,
-                          labelText: 'Correo electrónico',
-                          hintText: 'ejemplo@email.com',
-                          prefixIcon: Icons.email_outlined,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 16),
-                        CustomTextField(
-                          controller: _passCtrl,
-                          labelText: 'Contraseña',
-                          prefixIcon: Icons.lock_outline,
-                          obscureText: true,
-                        ),
-                        const SizedBox(height: 24),
-
-                        Obx(() => CustomButton(
-                          text: 'Registrarse',
-                          icon: Icons.person_add,
-                          isLoading: _authC.isLoading.value,
-                          onPressed: _handleRegister,
-                        )),
-                      ],
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          CustomTextField(
+                            controller: _nameCtrl,
+                            labelText: 'Nombre completo',
+                            hintText: 'Juan Perez',
+                            prefixIcon: Icons.person_outline,
+                            errorMaxLines: 2,
+                            validator: (value) {
+                              if (!Validators.isNotEmpty(value ?? '')) {
+                                return 'Por favor, rellena tu nombre completo';
+                              }
+                              if (!Validators.isValidName(value!)) {
+                                return 'Sólo letras y espacios';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            controller: _emailCtrl,
+                            labelText: 'Correo electrónico',
+                            hintText: 'ejemplo@gmail.com',
+                            prefixIcon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            errorMaxLines: 2,
+                            validator: (value) {
+                              if (!Validators.isNotEmpty(value ?? '')) {
+                                return 'Por favor, rellena el correo';
+                              }
+                              if (!Validators.isValidEmail(value!)) {
+                                return 'Introduce un correo válido';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            controller: _passCtrl,
+                            labelText: 'Contraseña',
+                            prefixIcon: Icons.lock_outline,
+                            obscureText: true,
+                            errorMaxLines: 2,
+                            validator: (value) {
+                              if (!Validators.isNotEmpty(value ?? '')) {
+                                return 'Por favor, rellena la contraseña';
+                              }
+                              if (!Validators.isValidPassword(value!)) {
+                                return 'Al menos 8 caracteres y una mayúscula';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          Obx(
+                            () => CustomButton(
+                              text: 'Registrarse',
+                              icon: Icons.person_add,
+                              isLoading: _authC.isLoading.value,
+                              onPressed: _handleRegister,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -86,10 +143,16 @@ class RegisterPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('¿Ya tienes cuenta?', style: TextStyle(color: Colors.grey.shade700)),
+                    Text(
+                      '¿Ya tienes cuenta?',
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
                     TextButton(
                       onPressed: () => Get.toNamed(AppRoutes.login),
-                      child: const Text('Inicia sesión', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Inicia sesión',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ],
                 ),
@@ -102,26 +165,13 @@ class RegisterPage extends StatelessWidget {
   }
 
   Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     final name  = _nameCtrl.text.trim();
     final email = _emailCtrl.text.trim();
     final pass  = _passCtrl.text.trim();
-
-    if (name.isEmpty || email.isEmpty || pass.isEmpty) {
-      Get.snackbar('Error', 'Completa todos los campos',
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade800,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
-      return;
-    }
-    if (!Validators.isValidEmail(email)) {
-      Get.snackbar('Error', 'Correo inválido',
-        backgroundColor: Colors.red.shade50,
-        colorText: Colors.red.shade800,
-        icon: const Icon(Icons.error_outline, color: Colors.red),
-      );
-      return;
-    }
 
     final ok = await _authC.register(email: email, password: pass, name: name);
     if (!ok) return;
@@ -134,24 +184,41 @@ class RegisterPage extends StatelessWidget {
         email: email,
       );
     } catch (e) {
-      Get.snackbar('Error', 'No se pudo guardar perfil: $e',
+      Get.snackbar(
+        'Error',
+        'No se pudo guardar perfil: $e',
         backgroundColor: Colors.red.shade50,
         colorText: Colors.red.shade800,
+        icon: const Icon(Icons.error_outline, color: Colors.red),
       );
       return;
     }
 
     final uc = Get.find<UserController>();
-    uc.setUser(id: _authC.user.value!.$id, nombreUsuario: name, correo: email);
+    uc.setUser(
+      id: _authC.user.value!.$id,
+      nombreUsuario: name,
+      correo: email,
+    );
 
     final ac = Get.find<AnalysisController>();
     ac.setUserId(_authC.user.value!.$id);
 
-    Get.snackbar('¡Listo!', 'Registro exitoso',
+    Get.snackbar(
+      '¡Listo!',
+      'Registro exitoso',
       backgroundColor: Colors.green.shade50,
       colorText: Colors.green.shade800,
       icon: const Icon(Icons.check_circle, color: Colors.green),
     );
     Get.offAllNamed(AppRoutes.home);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 }

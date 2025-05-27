@@ -1,5 +1,6 @@
 import 'package:fatigue_control/app/controllers/analysis_controller.dart';
 import 'package:fatigue_control/app/data/models/analysis_record.dart';
+import 'package:fatigue_control/app/pages/emergency_page.dart';
 import 'package:fatigue_control/app/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -72,18 +73,17 @@ class _HomePageState extends State<HomePage> {
                           direction: DismissDirection.endToStart,
                           background: Container(
                             alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             color: Colors.red,
-                            child: const Icon(Icons.delete,
-                                color: Colors.white),
+                            child:
+                                const Icon(Icons.delete, color: Colors.white),
                           ),
                           confirmDismiss: (_) async {
                             return await Get.dialog<bool>(
                                     AlertDialog(
                                       title: const Text('Confirmar'),
-                                      content: const Text(
-                                          '¿Eliminar este análisis?'),
+                                      content:
+                                          const Text('¿Eliminar este análisis?'),
                                       actions: [
                                         TextButton(
                                           onPressed: () =>
@@ -121,13 +121,30 @@ class _HomePageState extends State<HomePage> {
             );
           }),
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          icon: const Icon(Icons.add),
-          label: const Text('Nuevo análisis'),
-          onPressed: () async {
-            await Get.toNamed(AppRoutes.scan);
-            await ac.loadHistory();
-          },
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            FloatingActionButton.extended(
+              heroTag: 'emergency',
+              icon: const Icon(Icons.warning_amber),
+              backgroundColor: Colors.redAccent,
+              label: const Text('Emergencia'),
+              onPressed: () {
+                Get.to(() => const EmergencyPage());
+              },
+            ),
+            const SizedBox(height: 12),
+            FloatingActionButton.extended(
+              heroTag: 'new_analysis',
+              icon: const Icon(Icons.add),
+              label: const Text('Nuevo análisis'),
+              onPressed: () async {
+                await Get.toNamed(AppRoutes.scan);
+                await ac.loadHistory();
+              },
+            ),
+          ],
         ),
       ),
     );

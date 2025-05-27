@@ -9,4 +9,5 @@ abstract class AppRoutes {
   static const alert = '/alert';
   static const splash = '/';
   static const tips = '/tips';
+  static const emergency = '/emergency';
 }
